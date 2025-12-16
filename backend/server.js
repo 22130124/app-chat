@@ -9,13 +9,16 @@ dotenv.config({ path: "./.env" });
 
 const app = require("./app");
 const User = require("./models/User");
+const Conversation = require("./models/Conversation");
+const Message = require("./models/Message");
 
 // Create HTTP và WS server
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server, path: "/ws" });
 
 // Connection tracking
-const activeConnections = new Map(); // username -> ws
+const activeConnections = new Map();
+const roomMembers = new Map();
 
 //Dùng test
 function log(...args) {
@@ -26,6 +29,24 @@ function send(ws, payload) {
   if (ws.readyState === WebSocket.OPEN) {
     ws.send(JSON.stringify(payload));
   }
+}
+
+function sendToUsername(username, payload) {
+  const ws = activeConnections.get(username?.toLowerCase());
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify(payload));
+  }
+}
+
+function addUserToRoom(username, roomName) {
+  const key = roomName.toLowerCase();
+  if (!roomMembers.has(key)) roomMembers.set(key, new Set());
+  roomMembers.get(key).add(username.toLowerCase());
+}
+
+function getRoomMembers(roomName) {
+  const key = roomName.toLowerCase();
+  return roomMembers.get(key) || new Set();
 }
 
 function generateReLoginCode() {
@@ -79,6 +100,20 @@ async function handleEvent(ws, event, data) {
       return reLogin(ws, data);
     case "LOGOUT":
       return logout(ws);
+    case "CREATE_ROOM":
+      return createRoom(ws, data);
+    case "JOIN_ROOM":
+      return joinRoom(ws, data);
+    case "GET_ROOM_CHAT_MES":
+      return getRoomMessages(ws, data);
+    case "GET_PEOPLE_CHAT_MES":
+      return getPeopleMessages(ws, data);
+    case "SEND_CHAT":
+      return sendChat(ws, data);
+    case "CHECK_USER":
+      return checkUser(ws, data);
+    case "GET_USER_LIST":
+      return getUserList(ws);
     default:
       return send(ws, { status: "error", message: `Unknown event ${event}` });
   }
@@ -184,6 +219,231 @@ async function logout(ws) {
     activeConnections.delete(ws.username);
   }
   send(ws, { status: "success", event: "LOGOUT" });
+}
+
+async function createRoom(ws, data) {
+  if (!ws.username)
+    return send(ws, {
+      status: "error",
+      event: "CREATE_ROOM",
+      message: "Not logged in",
+    });
+  const { name } = data || {};
+  if (!name)
+    return send(ws, {
+      status: "error",
+      event: "CREATE_ROOM",
+      message: "name required",
+    });
+  let room = await Conversation.findOne({ roomName: name.toLowerCase() });
+  if (!room) {
+    room = await Conversation.create({ roomName: name.toLowerCase() });
+  }
+  addUserToRoom(ws.username, name);
+  send(ws, { status: "success", event: "CREATE_ROOM", data: { name } });
+}
+
+async function joinRoom(ws, data) {
+  if (!ws.username)
+    return send(ws, {
+      status: "error",
+      event: "JOIN_ROOM",
+      message: "Not logged in",
+    });
+  const { name } = data || {};
+  if (!name)
+    return send(ws, {
+      status: "error",
+      event: "JOIN_ROOM",
+      message: "name required",
+    });
+  let room = await Conversation.findOne({ roomName: name.toLowerCase() });
+  if (!room) {
+    room = await Conversation.create({ roomName: name.toLowerCase() });
+  }
+  addUserToRoom(ws.username, name);
+  send(ws, { status: "success", event: "JOIN_ROOM", data: { name } });
+}
+
+async function getRoomMessages(ws, data) {
+  if (!ws.username)
+    return send(ws, {
+      status: "error",
+      event: "GET_ROOM_CHAT_MES",
+      message: "Not logged in",
+    });
+  const { name, page = 1 } = data || {};
+  if (!name)
+    return send(ws, {
+      status: "error",
+      event: "GET_ROOM_CHAT_MES",
+      message: "name required",
+    });
+  const room = await Conversation.findOne({ roomName: name.toLowerCase() });
+  if (!room)
+    return send(ws, {
+      status: "success",
+      event: "GET_ROOM_CHAT_MES",
+      data: { messages: [] },
+    });
+  const limit = 20;
+  const skip = (Number(page) - 1) * limit;
+  const messages = await Message.find({ conversation_id: room._id })
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(limit);
+  send(ws, {
+    status: "success",
+    event: "GET_ROOM_CHAT_MES",
+    data: { messages: messages.reverse() },
+  });
+}
+
+async function getPeopleMessages(ws, data) {
+  if (!ws.username)
+    return send(ws, {
+      status: "error",
+      event: "GET_PEOPLE_CHAT_MES",
+      message: "Not logged in",
+    });
+  const { name, page = 1 } = data || {};
+  if (!name)
+    return send(ws, {
+      status: "error",
+      event: "GET_PEOPLE_CHAT_MES",
+      message: "name required",
+    });
+  const me = await getUserByUsername(ws.username);
+  const other = await getUserByUsername(name);
+  if (!me || !other)
+    return send(ws, {
+      status: "error",
+      event: "GET_PEOPLE_CHAT_MES",
+      message: "User not found",
+    });
+  let conversation = await Conversation.findOne({
+    participants: { $all: [me._id, other._id], $size: 2 },
+  });
+  if (!conversation) {
+    conversation = await Conversation.create({
+      participants: [me._id, other._id],
+    });
+  }
+  const limit = 20;
+  const skip = (Number(page) - 1) * limit;
+  const messages = await Message.find({ conversation_id: conversation._id })
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(limit);
+  send(ws, {
+    status: "success",
+    event: "GET_PEOPLE_CHAT_MES",
+    data: { messages: messages.reverse() },
+  });
+}
+
+async function sendChat(ws, data) {
+  if (!ws.username)
+    return send(ws, {
+      status: "error",
+      event: "SEND_CHAT",
+      message: "Not logged in",
+    });
+  const { type, to, mes } = data || {};
+  if (!type || !to || typeof mes !== "string") {
+    return send(ws, {
+      status: "error",
+      event: "SEND_CHAT",
+      message: "type, to, mes required",
+    });
+  }
+  const fromUser = await getUserByUsername(ws.username);
+  if (!fromUser)
+    return send(ws, {
+      status: "error",
+      event: "SEND_CHAT",
+      message: "User not found",
+    });
+
+  if (type === "room") {
+    let room = await Conversation.findOne({ roomName: to.toLowerCase() });
+    if (!room) room = await Conversation.create({ roomName: to.toLowerCase() });
+    addUserToRoom(ws.username, to);
+    const message = await Message.create({
+      conversation_id: room._id,
+      from: fromUser._id,
+      to: fromUser._id,
+      text: mes,
+      type: "Text",
+    });
+    await Conversation.findByIdAndUpdate(room._id, {
+      lastMessage: message._id,
+      lastMessageAt: Date.now(),
+    });
+    const payload = {
+      status: "success",
+      event: "SEND_CHAT",
+      data: { type, to, mes, from: ws.username },
+    };
+    for (const member of getRoomMembers(to)) {
+      sendToUsername(member, payload);
+    }
+    return;
+  }
+
+  if (type === "people") {
+    const target = await getUserByUsername(to);
+    if (!target)
+      return send(ws, {
+        status: "error",
+        event: "SEND_CHAT",
+        message: "Target not found",
+      });
+    let conversation = await Conversation.findOne({
+      participants: { $all: [fromUser._id, target._id], $size: 2 },
+    });
+    if (!conversation) {
+      conversation = await Conversation.create({
+        participants: [fromUser._id, target._id],
+      });
+    }
+    const message = await Message.create({
+      conversation_id: conversation._id,
+      from: fromUser._id,
+      to: target._id,
+      text: mes,
+      type: "Text",
+    });
+    await Conversation.findByIdAndUpdate(conversation._id, {
+      lastMessage: message._id,
+      lastMessageAt: Date.now(),
+    });
+    const payload = {
+      status: "success",
+      event: "SEND_CHAT",
+      data: { type, to, mes, from: ws.username },
+    };
+    sendToUsername(ws.username, payload);
+    sendToUsername(target.username, payload);
+    return;
+  }
+
+  send(ws, { status: "error", event: "SEND_CHAT", message: "Invalid type" });
+}
+
+async function checkUser(ws, data) {
+  const { user } = data || {};
+  const found = await getUserByUsername(user);
+  send(ws, {
+    status: "success",
+    event: "CHECK_USER",
+    data: { exists: !!found },
+  });
+}
+
+async function getUserList(ws) {
+  const users = await User.find({}, "username status");
+  send(ws, { status: "success", event: "GET_USER_LIST", data: { users } });
 }
 
 // Mongo connect & start server
