@@ -8,6 +8,8 @@ import {
 } from "../store/slices/messageSlice";
 import { wsClient } from "../utils/websocket";
 import api from "../utils/api";
+import NavigationSidebar from "../components/NavigationSidebar";
+import ChatsList from "../components/ChatsList";
 
 function Chat() {
   const { conversationId } = useParams();
@@ -107,15 +109,19 @@ function Chat() {
 
   if (!conversation) {
     return (
-      <div className="flex h-screen items-center justify-center">
-        <div className="text-center">
-          <p className="text-gray-500 mb-4">Conversation not found</p>
-          <button
-            onClick={() => navigate("/dashboard")}
-            className="btn btn-primary"
-          >
-            Back to Dashboard
-          </button>
+      <div className="flex h-screen bg-gray-100">
+        <NavigationSidebar />
+        <ChatsList />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <p className="text-gray-500 mb-4">Conversation not found</p>
+            <button
+              onClick={() => navigate("/dashboard")}
+              className="btn btn-primary"
+            >
+              Back to Dashboard
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -123,16 +129,16 @@ function Chat() {
 
   return (
     <div className="flex h-screen bg-gray-100">
-      {/* Chat Header */}
+      {/* Navigation Sidebar */}
+      <NavigationSidebar />
+
+      {/* Chats List */}
+      <ChatsList />
+
+      {/* Chat Content */}
       <div className="flex-1 flex flex-col bg-white">
         <div className="p-4 border-b border-gray-200 flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <button
-              onClick={() => navigate("/dashboard")}
-              className="md:hidden text-gray-600 hover:text-gray-800"
-            >
-              ← Back
-            </button>
             <div className="w-10 h-10 rounded-full bg-primary-500 flex items-center justify-center text-white font-semibold">
               {otherParticipant?.firstName?.[0]}
               {otherParticipant?.lastName?.[0]}
