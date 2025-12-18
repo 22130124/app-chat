@@ -8,9 +8,7 @@ export const RegisterPage = () => {
     const navigate = useNavigate();
     // Hàm xử lý đăng ký tài khoản
     const handleSubmit = (formData) => {
-        console.log(formData);
-        register(
-            { username: formData.username, password: formData.password },
+        register({ username: formData.username, password: formData.password },
             (res) => {
                 // Đây là callback nhận message từ server
                 if (res.status === "success") {
