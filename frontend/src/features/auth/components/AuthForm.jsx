@@ -1,8 +1,11 @@
 import { useState } from "react";
 import styles from "./AuthForm.module.scss";
 import {toast} from "react-toastify";
+import {useNavigate} from "react-router-dom";
 
 export const AuthForm = ({ type = "login", onSubmit }) => {
+    const navigate = useNavigate();
+
     const [formData, setFormData] = useState({
         username: "",
         password: "",
@@ -32,6 +35,14 @@ export const AuthForm = ({ type = "login", onSubmit }) => {
 
         onSubmit?.(formData);
     };
+
+    const handleSwitchPage = () => {
+        if (type === "register") {
+            navigate("/login");
+        } else if (type === "login") {
+            navigate("/register");
+        }
+    }
 
     return (
         <form className={styles.form} onSubmit={handleSubmit}>
@@ -71,6 +82,10 @@ export const AuthForm = ({ type = "login", onSubmit }) => {
 
             <button className={styles.submitBtn} type="submit">
                 {type === "register" ? "Đăng ký" : "Đăng nhập"}
+            </button>
+
+            <button className={styles.switchPageBtn} onClick={handleSwitchPage}>
+                {type === "register" ? "Quay về đăng nhập" : "Đăng ký tài khoản mới"}
             </button>
         </form>
     );
