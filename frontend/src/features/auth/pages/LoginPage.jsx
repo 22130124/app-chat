@@ -4,11 +4,13 @@ import {login} from "../services/authService.js";
 import {toast} from "react-toastify";
 import {useNavigate} from "react-router-dom";
 import {useDispatch} from "react-redux";
-import {loginSuccess} from "../slice/authSlice.js";
+import {loginSuccess, logout} from "../slice/authSlice.js";
+import {useEffect} from "react";
 
 export const LoginPage = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
+
     // Hàm xử lý đăng nhập
     const handleSubmit = (formData) => {
         const user = formData.user;
@@ -17,11 +19,6 @@ export const LoginPage = () => {
             (res) => {
                 // Đây là callback nhận message từ server
                 if (res.status === "success") {
-                    // Thông báo
-                    toast.success("Chào mừng bạn đến với App Chat" , {
-                        toastId: "login-success",
-                    });
-
                     // Lưu user và RE_LOGIN_CODE vào local storage
                     localStorage.setItem("code", res.data.RE_LOGIN_CODE);
                     localStorage.setItem("user", user);

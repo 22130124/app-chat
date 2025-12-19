@@ -2,14 +2,16 @@ import {useNavigate} from "react-router-dom";
 import {AppRoutes} from "./routes/AppRoutes.jsx";
 import {toast, ToastContainer} from "react-toastify";
 import {connectSocket} from "./socket/socket.js";
-import {useEffect} from "react";
+import {useEffect, useState} from "react";
 import {handleAuthResponse, relogin} from "./features/auth/services/authService.js";
 import {useDispatch} from "react-redux";
 import {loginSuccess, logout} from "./features/auth/slice/authSlice.js";
+import {ClipLoader} from "react-spinners";
 
 function App() {
     const navigate = useNavigate();
     const dispatch = useDispatch();
+    const [checkingRelogin, setCheckingRelogin] = useState(true);
 
     // Hàm xử lý relogin
     const processRelogin = async () => {
@@ -28,12 +30,6 @@ function App() {
                         localStorage.setItem("code", res.data.RE_LOGIN_CODE);
                         // Lưu thông tin user đang đăng nhập vào store
                         dispatch(loginSuccess({user}));
-                        // Thông báo
-                        toast.success("Chào mừng bạn đến với App Chat" , {
-                            toastId: "login-success",
-                        });
-                        // Điều hướng về trang chủ
-                        navigate("/home");
                         resolve(res);
                     } else { // Trường hợp relogin thất bại
                         // Xóa hết mọi thông tin liên quan trong local storage
@@ -41,15 +37,12 @@ function App() {
                         localStorage.removeItem("code");
                         // Cập nhật store
                         dispatch(logout());
-                        // Điều hướng về trang login
-                        navigate("/login");
                         reject(res);
                     }
                 })
             })
         } else {
-            navigate("/login");
-            return Promise.reject("Không có đủ thông tin user và re-login code")
+            dispatch(logout());
         }
     }
 
@@ -63,6 +56,7 @@ function App() {
                 });
                 // Xử lý re-login
                 await processRelogin();
+                setCheckingRelogin(false);
             } catch (error) {
                 console.error("Lỗi kết nối WebSocket:", error);
                 navigate("/login");
@@ -70,6 +64,14 @@ function App() {
         }
         initApp();
     }, []);
+
+    if (checkingRelogin) {
+        return (
+            <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
+                <ClipLoader size={60} color="#36d7b7" />
+            </div>
+        );
+    }
 
     return (
         <div className="App">
