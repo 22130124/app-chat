@@ -7,9 +7,9 @@ export const AuthForm = ({ type = "login", onSubmit }) => {
     const navigate = useNavigate();
 
     const [formData, setFormData] = useState({
-        username: "",
-        password: "",
-        confirmPassword: ""
+        user: "",
+        pass: "",
+        confirmPass: ""
     });
 
     // Hàm xử lý khi người dùng nhập thông tin
@@ -28,8 +28,8 @@ export const AuthForm = ({ type = "login", onSubmit }) => {
         e.preventDefault();
 
         // Nếu mật khẩu nhập lại không khớp thì hiển thị thông báo và không gửi form
-        if (type === "register" && formData.password !== formData.confirmPassword) {
-            toast.error('Mật khẩu xác nhận không khớp', { toastId: 'password-mismatch' })
+        if (type === "register" && formData.pass !== formData.confirmPass) {
+            toast.error('Mật khẩu xác nhận không khớp', { toastId: 'pass-mismatch' })
             return;
         }
 
@@ -49,8 +49,8 @@ export const AuthForm = ({ type = "login", onSubmit }) => {
             <div className={styles.formGroup}>
                 <label>Tên đăng nhập</label>
                 <input
-                    name="username"
-                    value={formData.username}
+                    name="user"
+                    value={formData.user}
                     onChange={handleChange}
                     required
                 />
@@ -60,8 +60,8 @@ export const AuthForm = ({ type = "login", onSubmit }) => {
                 <label>Mật khẩu</label>
                 <input
                     type="password"
-                    name="password"
-                    value={formData.password}
+                    name="pass"
+                    value={formData.pass}
                     onChange={handleChange}
                     required
                 />
@@ -72,8 +72,8 @@ export const AuthForm = ({ type = "login", onSubmit }) => {
                     <label>Nhập lại mật khẩu</label>
                     <input
                         type="password"
-                        name="confirmPassword"
-                        value={formData.confirmPassword}
+                        name="confirmPass"
+                        value={formData.confirmPass}
                         onChange={handleChange}
                         required
                     />
