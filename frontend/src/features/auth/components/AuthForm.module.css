@@ -12,25 +12,22 @@
   display: flex;
   flex-direction: column;
   margin-bottom: 16px;
-
-  label {
-    margin-bottom: 6px;
-    font-size: 14px;
-    font-weight: 500;
-    color: #333;
-  }
-
-  input {
-    padding: 10px 12px;
-    font-size: 14px;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-    outline: none;
-
-    &:focus {
-      border-color: #1677ff;
-    }
-  }
+}
+.formGroup label {
+  margin-bottom: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+}
+.formGroup input {
+  padding: 10px 12px;
+  font-size: 14px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  outline: none;
+}
+.formGroup input:focus {
+  border-color: #1677ff;
 }
 
 .submitBtn {
@@ -43,10 +40,9 @@
   border: none;
   border-radius: 6px;
   cursor: pointer;
-
-  &:hover {
-    background: #0958d9;
-  }
+}
+.submitBtn:hover {
+  background: #0958d9;
 }
 
 .switchPageBtn {
@@ -60,8 +56,9 @@
   border: none;
   border-radius: 6px;
   cursor: pointer;
-
-  &:hover {
-    background: #6a6a6a;
-  }
 }
+.switchPageBtn:hover {
+  background: #6a6a6a;
+}
+
+/*# sourceMappingURL=AuthForm.module.css.map */
