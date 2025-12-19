@@ -8,7 +8,9 @@ export const LoginPage = () => {
     const navigate = useNavigate();
     // Hàm xử lý đăng nhập
     const handleSubmit = (formData) => {
-        login({ username: formData.username, password: formData.password },
+        const user = formData.user;
+        const pass = formData.pass;
+        login({ user, pass },
             (res) => {
                 // Đây là callback nhận message từ server
                 if (res.status === "success") {

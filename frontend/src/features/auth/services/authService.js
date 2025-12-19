@@ -3,7 +3,7 @@ import { sendSocketMessage } from "../../../socket/socket.js";
 let authCallback = null;
 
 // Hàm xử lý gửi request đăng ký tài khoản
-export const register = ({ username, password }, callback) => {
+export const register = ({ user, pass }, callback) => {
     authCallback = callback;
 
     sendSocketMessage({
@@ -12,14 +12,14 @@ export const register = ({ username, password }, callback) => {
             event: "REGISTER",
             data:
                 {
-                    user: username,
-                    pass: password
+                    user: user,
+                    pass: pass
                 }
         }
     });
 };
 
-export const login = ({ username, password }, callback) => {
+export const login = ({ user, pass }, callback) => {
     authCallback = callback;
 
     sendSocketMessage({
@@ -28,8 +28,8 @@ export const login = ({ username, password }, callback) => {
             event: "LOGIN",
             data:
                 {
-                    user: username,
-                    pass: password
+                    user: user,
+                    pass: pass
                 }
         }
     });
