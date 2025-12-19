@@ -18,7 +18,7 @@ export const LoginPage = () => {
                 // Đây là callback nhận message từ server
                 if (res.status === "success") {
                     // Thông báo
-                    toast.success("Đăng nhập thành công" , {
+                    toast.success("Chào mừng bạn đến với App Chat" , {
                         toastId: "login-success",
                     });
 

@@ -10,42 +10,44 @@ const SOCKET_URL = "wss://chat.longapp.site/chat/chat";
 export const connectSocket = (onMessageCallback) => {
     // Nếu socket đã tồn tại và đang ở trạng thái OPEN thì không tạo kết nối mới nữa
     if (socket && socket.readyState === WebSocket.OPEN) {
-        return socket;
+        return Promise.resolve(socket);
     }
 
-    // Tạo kết nối WebSocket mới
-    socket = new WebSocket(SOCKET_URL);
+    return new Promise((resolve, reject) => {
+        // Tạo kết nối WebSocket mới
+        socket = new WebSocket(SOCKET_URL);
 
-    // Khi kết nối thành công
-    socket.onopen = () => {
-        console.log("Đã kết nối WebSocket");
-    };
+        // Khi kết nối thành công
+        socket.onopen = () => {
+            console.log("Đã kết nối WebSocket");
+            resolve(socket);
+        };
 
-    // Khi nhận được message từ server
-    socket.onmessage = (event) => {
-        try {
-            // Parse về JSON
-            const data = JSON.parse(event.data);
-            // Nếu có callback thì gọi callback
-            onMessageCallback && onMessageCallback(data);
-        } catch (err) {
-            // Trường hợp data không phải JSON hợp lệ
-            console.error("Socket message không hợp lệ", err);
-        }
-    };
+        // Khi nhận được message từ server
+        socket.onmessage = (event) => {
+            try {
+                // Parse về JSON
+                const data = JSON.parse(event.data);
+                // Nếu có callback thì gọi callback
+                onMessageCallback && onMessageCallback(data);
+            } catch (err) {
+                // Trường hợp data không phải JSON hợp lệ
+                console.error("Socket message không hợp lệ", err);
+            }
+        };
 
-    // Khi xảy ra lỗi trong quá trình kết nối
-    socket.onerror = (error) => {
-        console.error("Lỗi khi kết nối WebSocket", error);
-    };
+        // Khi xảy ra lỗi trong quá trình kết nối
+        socket.onerror = (error) => {
+            console.error("Lỗi khi kết nối WebSocket", error);
+            reject(error);
+        };
 
-    // Khi socket bị đóng (server đóng hoặc client đóng)
-    socket.onclose = () => {
-        console.log("Đã ngắt kết nối WebSocket");
-        socket = null;
-    };
-
-    return socket;
+        // Khi socket bị đóng (server đóng hoặc client đóng)
+        socket.onclose = () => {
+            console.log("Đã ngắt kết nối WebSocket");
+            socket = null;
+        };
+    })
 };
 
 // Hàm gửi message lên server
