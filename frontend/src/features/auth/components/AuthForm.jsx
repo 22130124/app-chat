@@ -1,10 +1,33 @@
-import { useState } from "react";
+import {useEffect, useState} from "react";
 import styles from "./AuthForm.module.scss";
 import {toast} from "react-toastify";
 import {useNavigate} from "react-router-dom";
+import {useDispatch, useSelector} from "react-redux";
+import {logout} from "../services/authService.js";
+import {processLogout} from "../slice/authSlice.js";
 
 export const AuthForm = ({ type = "login", onSubmit }) => {
     const navigate = useNavigate();
+
+    const dispatch = useDispatch();
+    const authState = useSelector(state => state.auth);
+    const isLoggedIn = authState.isLoggedIn;
+
+    // Xử lý khi người dùng truy cập vào trang đăng nhập/đăng ký
+    useEffect(() => {
+        // Nếu người dùng đã đăng nhập thì đăng xuất tài khoản khi truy cập vào trang này
+        if (isLoggedIn) {
+            console.log("logged in");
+            logout((res) => {
+                console.log(res)
+                console.log(res.status);
+                if (res.status === "success") {
+                    toast.warning("Đã đăng xuất tài khoản")
+                    dispatch(processLogout())
+                }
+            })
+        }
+    }, [])
 
     const [formData, setFormData] = useState({
         user: "",

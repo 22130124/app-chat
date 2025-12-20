@@ -1,11 +1,15 @@
 import {AuthForm} from "../components/AuthForm.jsx";
 import styles from "./RegisterPage.module.scss"
-import {register} from "../services/authService.js";
+import {logout, register} from "../services/authService.js";
 import {toast} from "react-toastify";
 import {useNavigate} from "react-router-dom";
+import {useEffect} from "react";
+import {processLogout} from "../slice/authSlice.js";
+import {useDispatch, useSelector} from "react-redux";
 
 export const RegisterPage = () => {
     const navigate = useNavigate();
+
     // Hàm xử lý đăng ký tài khoản
     const handleSubmit = (formData) => {
         const user = formData.user;

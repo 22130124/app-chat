@@ -51,8 +51,19 @@ export const relogin = ({ user, code }, callback) => {
     });
 };
 
+export const logout = (callback) => {
+    authCallback = callback;
+
+    sendSocketMessage({
+        action: "onchat",
+        data: {
+            event: "LOGOUT"
+        }
+    })
+}
+
 export const handleAuthResponse = (message) => {
-    if (message.event === "REGISTER" || message.event === "LOGIN" || message.event === "RE_LOGIN") {
+    if (message.event === "REGISTER" || message.event === "LOGIN" || message.event === "RE_LOGIN" || message.event === "LOGOUT") {
         authCallback?.(message);
         authCallback = null;
     }

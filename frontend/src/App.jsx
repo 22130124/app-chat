@@ -5,7 +5,7 @@ import {connectSocket} from "./socket/socket.js";
 import {useEffect, useState} from "react";
 import {handleAuthResponse, relogin} from "./features/auth/services/authService.js";
 import {useDispatch} from "react-redux";
-import {loginSuccess, logout} from "./features/auth/slice/authSlice.js";
+import {loginSuccess, processLogout} from "./features/auth/slice/authSlice.js";
 import {ClipLoader} from "react-spinners";
 
 function App() {
@@ -36,13 +36,13 @@ function App() {
                         localStorage.removeItem("user");
                         localStorage.removeItem("code");
                         // Cập nhật store
-                        dispatch(logout());
+                        dispatch(processLogout());
                         reject(res);
                     }
                 })
             })
         } else {
-            dispatch(logout());
+            dispatch(processLogout());
         }
     }
 
