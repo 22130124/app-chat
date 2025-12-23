@@ -3,7 +3,6 @@ import {Routes, Route, Navigate} from 'react-router-dom';
 import {LoginPage} from "../features/auth/pages/LoginPage.jsx";
 import {RegisterPage} from "../features/auth/pages/RegisterPage.jsx";
 import {HomePage} from "../features/home/pages/HomePage.jsx";
-import ChatPage from "../features/chat/pages/ChatPage.jsx";
 import {useSelector} from "react-redux";
 import {ProtectedRoute} from "./ProtectedRoute.jsx";
 
@@ -16,12 +15,11 @@ export const AppRoutes = () => {
         <Routes>
             {/* Routes công khai */}
             <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />>
+            <Route path="/register" element={<RegisterPage />} />
 
             {/* Routes yêu cầu đăng nhập */}
             <Route path="/home" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
-            <Route path="/chat" element={<ProtectedRoute><ChatPage /></ProtectedRoute>} />
-
+            
             {/* Mọi route khác hoặc "/" đều redirect theo isLoggedIn */}
             <Route path="*" element={defaultRedirect} />
         </Routes>

@@ -1,4 +1,5 @@
 import styles from "./HomePage.module.scss";
+import { IconSidebar } from "../icon-sidebar/components/IconSidebar.jsx";
 import {ConversationList} from "../conversation-list/containers/ConversationList.jsx";
 import {ChatWindow} from "../chat/containers/ChatWindow.jsx";
 import {useEffect} from "react";
@@ -15,12 +16,17 @@ export const HomePage = () => {
 
     return (
         <div className={styles.container}>
-            {/* Bên trái: Lịch sử trò chuyện */}
-            <div className={styles.sidebar}>
+           {/* Cột 1: Icon sidebar */}
+           <div className={styles.iconSidebar}>
+                <IconSidebar/>
+           </div>
+
+            {/* Cột 2: Lịch sử trò chuyện */}
+            <div className={styles.conversation_list}>
                 <ConversationList />
             </div>
 
-            {/* Bên phải: Giao diện nhắn tin */}
+            {/* Cột 3: Giao diện nhắn tin */}
             <div className={styles.chatWindow}>
                 <ChatWindow />
             </div>
