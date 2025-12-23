@@ -12,14 +12,13 @@ export const HomePage = () => {
     const [showCreateGroup, setShowCreateGroup] =useState(false);
     const [groups, setGroups] = useState([]);
 
-
     // Xử lý khi người truy cập trang
     useEffect(() => {
         // Thông báo hiển thị lời chào
         toast.success("Chào mừng bạn đến với App Chat" , {
             toastId: "login-success",
         });
-    })
+    }, [])
 
     // nhận group từ modal
     const handleCreateGroup =(groupName)=>{
