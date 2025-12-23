@@ -52,7 +52,10 @@ function App() {
             try {
                 // Kết nối socket
                 await connectSocket((data) => {
-                    handleAuthResponse(data);
+                    if (data.event === "REGISTER" || data.event === "LOGIN" ||
+                        data.event === "RE_LOGIN" || data.event === "LOGOUT") {
+                        handleAuthResponse(data);
+                    }
                 });
                 // Xử lý re-login
                 await processRelogin();
@@ -67,8 +70,8 @@ function App() {
 
     if (checkingRelogin) {
         return (
-            <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
-                <ClipLoader size={60} color="#36d7b7" />
+            <div style={{display: "flex", justifyContent: "center", alignItems: "center", height: "100vh"}}>
+                <ClipLoader size={60} color="#36d7b7"/>
             </div>
         );
     }

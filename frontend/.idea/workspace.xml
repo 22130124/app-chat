@@ -4,10 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="2ca99fbc-6b94-4b3a-a51d-c3292dad6fb6" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/src/features/home/pages/HomePage.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/features/home/pages/HomePage.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/socket/socket.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/socket/socket.js" afterDir="false" />
-    </list>
+    <list default="true" id="2ca99fbc-6b94-4b3a-a51d-c3292dad6fb6" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -85,7 +82,7 @@
       <workItem from="1766218786816" duration="3909000" />
       <workItem from="1766415070193" duration="24000" />
       <workItem from="1766468490884" duration="340000" />
-      <workItem from="1766468854822" duration="5086000" />
+      <workItem from="1766468854822" duration="5597000" />
     </task>
     <servers />
   </component>
