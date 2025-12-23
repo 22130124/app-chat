@@ -1,6 +1,14 @@
 // Biến socket dùng để lưu instance WebSocket hiện tại
 // Đặt ngoài scope để dùng chung cho nhiều hàm
 let socket = null;
+/**
+ * messageHandler là hàm xử lý callback
+ * Lý do: đôi khi gửi message, kết nối socket đã bị ngắt và cần kết nối lại trước khi gửi message này
+ * Trong hàm sendSocketMessage, sẽ có cơ chế re-connect socket trước khi gửi message nếu đã bị đóng kết nối
+ * Do đó, cần đặt biến messageHandler này để khi re-connect socket thì hàm xử lý callback trước đó sẽ không bị ghi đè (logic xử lý ở App.js)
+ * Nếu không có biến này, sau khi re-connect socket sẽ không thể biết được callback sẽ xử lý ở đâu, xử lý như thế nào
+ */
+let messageHandler = null;
 
 // URL WebSocket server
 const SOCKET_URL = "wss://chat.longapp.site/chat/chat";
@@ -8,6 +16,11 @@ const SOCKET_URL = "wss://chat.longapp.site/chat/chat";
 // Hàm kết nối WebSocket
 // onMessageCallback: hàm callback để xử lý dữ liệu server gửi về
 export const connectSocket = (onMessageCallback) => {
+    // Nếu có truyền vào hàm onMessageCallback thì gán hàm này vào messageHandler
+    if (onMessageCallback) {
+        messageHandler = onMessageCallback;
+    }
+
     // Nếu socket đã tồn tại và đang ở trạng thái OPEN thì không tạo kết nối mới nữa
     if (socket && socket.readyState === WebSocket.OPEN) {
         return Promise.resolve(socket);
@@ -29,7 +42,7 @@ export const connectSocket = (onMessageCallback) => {
                 // Parse về JSON
                 const data = JSON.parse(event.data);
                 // Nếu có callback thì gọi callback
-                onMessageCallback && onMessageCallback(data);
+                messageHandler?.(data)
             } catch (err) {
                 // Trường hợp data không phải JSON hợp lệ
                 console.error("Socket message không hợp lệ", err);
@@ -52,15 +65,19 @@ export const connectSocket = (onMessageCallback) => {
 
 // Hàm gửi message lên server
 // payload: object dữ liệu muốn gửi
-export const sendSocketMessage = (payload) => {
-    // Kiểm tra socket đã tồn tại và đang mở chưa
-    if (!socket || socket.readyState !== WebSocket.OPEN) {
-        console.error("Socket chưa được kết nối");
-        return;
-    }
+export const sendSocketMessage = async (payload, onMessageCallback) => {
+    try {
+        // Kiểm tra socket đã tồn tại và đang mở chưa
+        // Nếu chưa thì kết nối
+        if (!socket || socket.readyState !== WebSocket.OPEN) {
+            await connectSocket();
+        }
 
-    // Convert object sang JSON string
-    socket.send(JSON.stringify(payload));
+        // Convert object sang JSON string
+        socket.send(JSON.stringify(payload));
+    } catch (error) {
+        console.log("Lỗi khi gửi message: " + error);
+    }
 };
 
 // Hàm ngắt kết nối WebSocket

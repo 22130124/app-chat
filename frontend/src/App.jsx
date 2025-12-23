@@ -5,7 +5,7 @@ import {connectSocket} from "./socket/socket.js";
 import {useEffect, useState} from "react";
 import {handleAuthResponse, relogin} from "./features/auth/services/authService.js";
 import {useDispatch} from "react-redux";
-import {loginSuccess, logout} from "./features/auth/slice/authSlice.js";
+import {loginSuccess, processLogout} from "./features/auth/slice/authSlice.js";
 import {ClipLoader} from "react-spinners";
 
 function App() {
@@ -36,13 +36,13 @@ function App() {
                         localStorage.removeItem("user");
                         localStorage.removeItem("code");
                         // Cập nhật store
-                        dispatch(logout());
+                        dispatch(processLogout());
                         reject(res);
                     }
                 })
             })
         } else {
-            dispatch(logout());
+            dispatch(processLogout());
         }
     }
 
@@ -52,7 +52,10 @@ function App() {
             try {
                 // Kết nối socket
                 await connectSocket((data) => {
-                    handleAuthResponse(data);
+                    if (data.event === "REGISTER" || data.event === "LOGIN" ||
+                        data.event === "RE_LOGIN" || data.event === "LOGOUT") {
+                        handleAuthResponse(data);
+                    }
                 });
                 // Xử lý re-login
                 await processRelogin();
@@ -67,8 +70,8 @@ function App() {
 
     if (checkingRelogin) {
         return (
-            <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
-                <ClipLoader size={60} color="#36d7b7" />
+            <div style={{display: "flex", justifyContent: "center", alignItems: "center", height: "100vh"}}>
+                <ClipLoader size={60} color="#36d7b7"/>
             </div>
         );
     }

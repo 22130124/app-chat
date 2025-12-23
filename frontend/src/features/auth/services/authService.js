@@ -1,9 +1,9 @@
-import { sendSocketMessage } from "../../../socket/socket.js";
+import {sendSocketMessage} from "../../../socket/socket.js";
 
 let authCallback = null;
 
 // Hàm xử lý gửi request đăng ký tài khoản
-export const register = ({ user, pass }, callback) => {
+export const register = ({user, pass}, callback) => {
     authCallback = callback;
 
     sendSocketMessage({
@@ -19,7 +19,7 @@ export const register = ({ user, pass }, callback) => {
     });
 };
 
-export const login = ({ user, pass }, callback) => {
+export const login = ({user, pass}, callback) => {
     authCallback = callback;
 
     sendSocketMessage({
@@ -35,7 +35,7 @@ export const login = ({ user, pass }, callback) => {
     });
 };
 
-export const relogin = ({ user, code }, callback) => {
+export const relogin = ({user, code}, callback) => {
     authCallback = callback;
 
     sendSocketMessage({
@@ -51,9 +51,18 @@ export const relogin = ({ user, code }, callback) => {
     });
 };
 
+export const logout = (callback) => {
+    authCallback = callback;
+
+    sendSocketMessage({
+        action: "onchat",
+        data: {
+            event: "LOGOUT"
+        }
+    })
+}
+
 export const handleAuthResponse = (message) => {
-    if (message.event === "REGISTER" || message.event === "LOGIN" || message.event === "RE_LOGIN") {
-        authCallback?.(message);
-        authCallback = null;
-    }
+    authCallback?.(message);
+    authCallback = null;
 };
