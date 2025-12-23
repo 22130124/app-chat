@@ -2,7 +2,7 @@ import styles from "./ConversationList.module.scss";
 import { Search } from "lucide-react";
 import { ConversationItem } from "../components/ConversationItem.jsx";
 
-export const ConversationList = () => {
+export const ConversationList = ({groups=[]}) => {
   return (
     <div className={styles.container}>
       <div className={styles.header}>
@@ -28,7 +28,19 @@ export const ConversationList = () => {
             avatarContent={u}
           />
         ))}
+          {/*thêm chat nhóm*/}
+          {groups.map((group)=>(
+              <ConversationItem
+              key={`group-${group.id}`}
+              name={group.name}
+              lastMessage={group.lastMessage}
+              time={group.time || "Vừa xong"}
+              avatarContent={group.avatarContent}
+              />
+          ))}
       </div>
     </div>
   );
 };
+
+
