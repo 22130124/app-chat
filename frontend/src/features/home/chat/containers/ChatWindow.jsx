@@ -8,6 +8,7 @@ import { setError, setLoading, setMessages } from "../slice/chatSlice.js";
 import { getPeopleChatMes } from "../services/peopleChatService.js";
 import { ClipLoader } from "react-spinners";
 import { updateConversationLastMessage } from "../../conversation-list/slice/conversationListSlice.js";
+import { formatMessageTime } from "../../../../utils/dateFormat.js";
 
 export const ChatWindow = () => {
   const dispatch = useDispatch();
@@ -47,14 +48,9 @@ export const ChatWindow = () => {
 
               return {
                 text: msg.mes || msg.message || msg.text,
-                time:
-                  msg.time ||
-                  msg.createdAt ||
-                  msg.createAt ||
-                  new Date().toLocaleTimeString("vi-VN", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  }),
+                time: formatMessageTime(
+                  msg.time || msg.createdAt || msg.createAt || new Date()
+                ),
                 isSent: fromUser === currentUser,
                 from: fromUser,
                 to: toUser,
@@ -62,7 +58,7 @@ export const ChatWindow = () => {
             });
             dispatch(setMessages(formatMes));
             dispatch(setError(null));
-            
+
             // Cập nhật last message vào conversation list
             const last = formatMes[formatMes.length - 1];
             if (last) {

@@ -6,6 +6,7 @@ import { toast } from "react-toastify";
 import { addNewMessage } from "../slice/chatSlice";
 import { updateConversationLastMessage } from "../../conversation-list/slice/conversationListSlice.js";
 import { sendPeopleChat } from "../services/peopleChatService.js";
+import { formatMessageTime } from "../../../../utils/dateFormat.js";
 
 export const MessageInput = ({ placeholder = "Nhập tin nhắn..." }) => {
   const [message, setMessage] = useState("");
@@ -25,10 +26,7 @@ export const MessageInput = ({ placeholder = "Nhập tin nhắn..." }) => {
     const messageText = message.trim();
     setMessage("");
 
-    const time = new Date().toLocaleTimeString("vi-VN", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+    const time = formatMessageTime(new Date());
 
     dispatch(
       addNewMessage({

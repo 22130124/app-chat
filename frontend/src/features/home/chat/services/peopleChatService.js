@@ -115,7 +115,6 @@ export const getUserList = (callback) => {
   const eventKey = "GET_USER_LIST";
   peopleChatCallback[eventKey] = callback;
 
-  console.log("Gửi request GET_USER_LIST");
   sendSocketMessage({
     action: "onchat",
     data: {
@@ -130,18 +129,12 @@ export const handlePeopleChatResponse = (message) => {
 
   //xử lý res GET_PEOPLE_CHAT_MES
   if (event === "GET_PEOPLE_CHAT_MES") {
-    console.log("Nhận được response GET_PEOPLE_CHAT_MES:", {
-      status,
-      data,
-      event,
-    });
     const keys = Object.keys(peopleChatCallback).filter((key) =>
       key.startsWith("GET_PEOPLE_CHAT_MES_")
     );
     keys.forEach((key) => {
       const callback = peopleChatCallback[key];
       if (callback) {
-        console.log("Gọi callback GET_PEOPLE_CHAT_MES cho key:", key);
         callback({ status, data, event });
         delete peopleChatCallback[key];
       }
@@ -178,14 +171,10 @@ export const handlePeopleChatResponse = (message) => {
 
   // Xử lý GET_USER_LIST response
   if (event === "GET_USER_LIST") {
-    console.log("Nhận được response GET_USER_LIST:", { status, data, event });
     const callback = peopleChatCallback["GET_USER_LIST"];
     if (callback) {
-      console.log("Gọi callback GET_USER_LIST");
       callback({ status, data, event });
       delete peopleChatCallback["GET_USER_LIST"];
-    } else {
-      console.warn("Không tìm thấy callback cho GET_USER_LIST");
-    }
+    } 
   }
 };

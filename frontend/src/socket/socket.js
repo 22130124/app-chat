@@ -1,16 +1,14 @@
 // Biến socket dùng để lưu instance WebSocket hiện tại
 // Đặt ngoài scope để dùng chung cho nhiều hàm
 let socket = null;
-
-// Lưu callback để có thể set lại khi reconnect
-let messageCallback = null;
-// Lưu callback để gọi khi reconnect thành công (ví dụ: relogin)
-let onReconnectCallback = null;
-// Flag để kiểm tra có đang reconnect không
-let isReconnecting = false;
-// Số lần reconnect (để tránh reconnect vô hạn)
-let reconnectAttempts = 0;
-const MAX_RECONNECT_ATTEMPTS = 5;
+/**
+ * messageHandler là hàm xử lý callback
+ * Lý do: đôi khi gửi message, kết nối socket đã bị ngắt và cần kết nối lại trước khi gửi message này
+ * Trong hàm sendSocketMessage, sẽ có cơ chế re-connect socket trước khi gửi message nếu đã bị đóng kết nối
+ * Do đó, cần đặt biến messageHandler này để khi re-connect socket thì hàm xử lý callback trước đó sẽ không bị ghi đè (logic xử lý ở App.js)
+ * Nếu không có biến này, sau khi re-connect socket sẽ không thể biết được callback sẽ xử lý ở đâu, xử lý như thế nào
+ */
+let messageHandler = null;
 
 // URL WebSocket server
 const SOCKET_URL = "wss://chat.longapp.site/chat/chat";
@@ -20,57 +18,14 @@ const isSocketReady = () => {
   return socket && socket.readyState === WebSocket.OPEN;
 };
 
-// Hàm reconnect tự động
-const reconnect = () => {
-  if (isReconnecting || reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
-    return;
-  }
-
-  isReconnecting = true;
-  reconnectAttempts++;
-
-  console.log(`Đang thử kết nối lại WebSocket (lần ${reconnectAttempts})...`);
-
-  setTimeout(() => {
-    if (messageCallback) {
-      connectSocket(messageCallback)
-        .then(() => {
-          isReconnecting = false;
-          reconnectAttempts = 0; // Reset khi reconnect thành công
-          console.log("Đã kết nối lại WebSocket thành công");
-
-          // Gọi callback relogin nếu có (để server biết user vẫn online)
-          if (onReconnectCallback) {
-            onReconnectCallback();
-          }
-        })
-        .catch(() => {
-          isReconnecting = false;
-          // Sẽ tự động reconnect lại nếu chưa đạt max attempts
-          if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
-            reconnect();
-          } else {
-            console.error("Đã đạt số lần reconnect tối đa");
-          }
-        });
-    } else {
-      isReconnecting = false;
-    }
-  }, 2000); // Đợi 2 giây trước khi reconnect
-};
-
 // Hàm kết nối WebSocket
 // onMessageCallback: hàm callback để xử lý dữ liệu server gửi về
-// onReconnect: hàm callback để gọi khi reconnect thành công (ví dụ: relogin)
-export const connectSocket = (onMessageCallback, onReconnect = null) => {
-  // Lưu callback để dùng khi reconnect
+export const connectSocket = (onMessageCallback) => {
+  // Nếu có truyền vào hàm onMessageCallback thì gán hàm này vào messageHandler
   if (onMessageCallback) {
-    messageCallback = onMessageCallback;
+    messageHandler = onMessageCallback;
   }
-  // Lưu callback relogin
-  if (onReconnect) {
-    onReconnectCallback = onReconnect;
-  }
+
   // Nếu socket đã tồn tại và đang ở trạng thái OPEN thì không tạo kết nối mới nữa
   if (isSocketReady()) {
     return Promise.resolve(socket);
@@ -83,8 +38,6 @@ export const connectSocket = (onMessageCallback, onReconnect = null) => {
     // Khi kết nối thành công
     socket.onopen = () => {
       console.log("Đã kết nối WebSocket");
-      reconnectAttempts = 0; // Reset khi kết nối thành công
-      isReconnecting = false;
       resolve(socket);
     };
 
@@ -94,7 +47,7 @@ export const connectSocket = (onMessageCallback, onReconnect = null) => {
         // Parse về JSON
         const data = JSON.parse(event.data);
         // Nếu có callback thì gọi callback
-        messageCallback && messageCallback(data);
+        messageHandler?.(data);
       } catch (err) {
         // Trường hợp data không phải JSON hợp lệ
         console.error("Socket message không hợp lệ", err);
@@ -108,42 +61,40 @@ export const connectSocket = (onMessageCallback, onReconnect = null) => {
     };
 
     // Khi socket bị đóng (server đóng hoặc client đóng)
-    socket.onclose = (event) => {
+    socket.onclose = () => {
       console.log("Đã ngắt kết nối WebSocket");
       socket = null;
-
-      // Chỉ reconnect nếu không phải do client đóng (code 1000) và chưa đạt max attempts
-      if (event.code !== 1000 && reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
-        reconnect();
-      }
     };
   });
 };
 
 // Hàm gửi message lên server
 // payload: object dữ liệu muốn gửi
-export const sendSocketMessage = (payload) => {
-  // Kiểm tra socket đã tồn tại và đang mở chưa
-  if (!isSocketReady()) {
-    console.error("Socket chưa được kết nối");
-    return;
-  }
+export const sendSocketMessage = async (payload) => {
+  try {
+    // Kiểm tra socket đã tồn tại và đang mở chưa
+    // Nếu chưa thì kết nối
+    if (!isSocketReady()) {
+      await connectSocket();
+    }
 
-  // Convert object sang JSON string
-  socket.send(JSON.stringify(payload));
+    // Kiểm tra lại socket sau khi connect (có thể vẫn chưa sẵn sàng)
+    if (!isSocketReady()) {
+      throw new Error("Socket chưa sẵn sàng để gửi message");
+    }
+
+    // Convert object sang JSON string
+    socket.send(JSON.stringify(payload));
+  } catch (error) {
+    console.log("Lỗi khi gửi message: " + error);
+    throw error; 
+  }
 };
 
 // Hàm ngắt kết nối WebSocket
 export const disconnectSocket = () => {
-  // Reset các biến khi disconnect
-  reconnectAttempts = MAX_RECONNECT_ATTEMPTS; // Ngăn không cho reconnect
-  isReconnecting = false;
-  messageCallback = null;
-  onReconnectCallback = null;
-
   if (socket) {
-    // Đóng với code 1000 (normal closure) để không trigger reconnect
-    socket.close(1000, "Client disconnect");
+    socket.close();
     socket = null;
   }
 };

@@ -1,11 +1,10 @@
 import {AuthForm} from "../components/AuthForm.jsx";
 import styles from "./LoginPage.module.scss";
-import {login} from "../services/authService.js";
+import {login, logout} from "../services/authService.js";
 import {toast} from "react-toastify";
 import {useNavigate} from "react-router-dom";
 import {useDispatch} from "react-redux";
-import {loginSuccess, logout} from "../slice/authSlice.js";
-import {useEffect} from "react";
+import {loginSuccess} from "../slice/authSlice.js";
 
 export const LoginPage = () => {
     const navigate = useNavigate();
@@ -15,7 +14,7 @@ export const LoginPage = () => {
     const handleSubmit = (formData) => {
         const user = formData.user;
         const pass = formData.pass;
-        login({ user, pass },
+        login({user, pass},
             (res) => {
                 // Đây là callback nhận message từ server
                 if (res.status === "success") {

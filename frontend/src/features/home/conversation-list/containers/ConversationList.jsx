@@ -18,7 +18,7 @@ import {
 import { ClipLoader } from "react-spinners";
 import { isSocketReady } from "../../../../socket/socket.js";
 
-export const ConversationList = () => {
+export const ConversationList = ({ groups = [] }) => {
   const dispatch = useDispatch();
   const { conversations, users, searchQuery, loading } = useSelector(
     (state) => state.conversationList
@@ -38,7 +38,7 @@ export const ConversationList = () => {
     }
 
     if (!isSocketReady()) {
-      return; // Socket chưa sẵn sàng, chờ kết nối
+      return;
     }
 
     if (conversations.length > 0) {
@@ -64,7 +64,7 @@ export const ConversationList = () => {
             typeof user === "string"
               ? user
               : user.user || user.name || user.displayName || user;
-          
+
           const userType = typeof user === "object" ? user.type : undefined;
           return (
             userName &&
@@ -98,10 +98,57 @@ export const ConversationList = () => {
     });
   }, [currentUser, conversations.length, dispatch]); // Chạy khi currentUser thay đổi hoặc conversations rỗng
 
-  // Filter conversations dựa trên search query
-  const filteredConversations = conversations.filter((conv) =>
-    conv.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Filter và sắp xếp conversations
+  // 1. Filter dựa trên search query
+  // 2. Sắp xếp: conversations đã nhắn tin (có lastMessage) ở trên ( trong các cái nhắn rồi, thì sắp theo time), chưa nhắn tin ở dưới
+  const filteredConversations = conversations
+    .filter((conv) =>
+      conv.name.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+    .sort((a, b) => {
+      // Kiểm tra conversation có lastMessage hay không (không rỗng)
+      const aHasMessage =
+        a.lastMessage &&
+        a.lastMessage.trim() !== "" &&
+        a.lastMessage !== "Chưa có tin nhắn";
+      const bHasMessage =
+        b.lastMessage &&
+        b.lastMessage.trim() !== "" &&
+        b.lastMessage !== "Chưa có tin nhắn";
+
+      // Ưu tiên: Đã nhắn tin ở trên, Chưa nhắn tin ở dưới
+      if (aHasMessage && !bHasMessage) return -1; // a có message, b không có → a lên trên
+      if (!aHasMessage && bHasMessage) return 1; // a không có, b có message → b lên trên
+
+      // Nếu cả hai đều có message: sắp xếp theo time (mới nhất lên trên)
+      if (aHasMessage && bHasMessage && a.time && b.time) {
+        // Parse time để so sánh (format: "HH:mm dd/MM/yyyy")
+        const parseTime = (timeStr) => {
+          const match = timeStr.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+          if (match) {
+            return new Date(
+              parseInt(match[3]),
+              parseInt(match[2]) - 1,
+              parseInt(match[1])
+            ).getTime();
+          }
+          return 0;
+        };
+        const timeA = parseTime(a.time);
+        const timeB = parseTime(b.time);
+        if (timeA !== timeB) {
+          return timeB - timeA; // Mới nhất lên trên
+        }
+      }
+
+      // Nếu cả hai đều không có message: sắp xếp theo tên (alphabetically) để dễ tìm
+      if (!aHasMessage && !bHasMessage) {
+        return a.name.localeCompare(b.name, "vi");
+      }
+
+      // Giữ nguyên thứ tự nếu không có điều kiện nào khác
+      return 0;
+    });
 
   const handleSearch = (e) => {
     const value = e.target.value;
@@ -110,7 +157,7 @@ export const ConversationList = () => {
   };
 
   const handleConversationClick = (user) => {
-    if (currentChatUser === user) return; 
+    if (currentChatUser === user) return;
     dispatch(setCurrentChatUser(user));
   };
 
@@ -187,6 +234,7 @@ export const ConversationList = () => {
       </div>
 
       <div className={styles.list}>
+        {/* PEOPLE CHAT */}
         {loading ? (
           <div
             style={{
@@ -230,6 +278,19 @@ export const ConversationList = () => {
             </div>
           ))
         )}
+
+        {/* GROUP CHAT */}
+        {groups.length > 0 &&
+          groups.map((group) => (
+            <ConversationItem
+              key={`group-${group.id}`}
+              name={group.name}
+              lastMessage={group.lastMessage || "Chưa có tin nhắn"}
+              time={group.time || "Vừa xong"}
+              avatarContent={group.avatarContent}
+              isGroup
+            />
+          ))}
       </div>
     </div>
   );
