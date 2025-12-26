@@ -7,21 +7,18 @@ import {
   handleAuthResponse,
   relogin,
 } from "./features/auth/services/authService.js";
-import { handlePeopleChatResponse } from "./features/home/chat/services/peopleChatService.js";
+import {
+  handlePeopleChatMessage,
+  handlePeopleChatResponse,
+} from "./features/home/chat/services/peopleChatService.js";
 import { useDispatch } from "react-redux";
 import {
   loginSuccess,
   processLogout,
 } from "./features/auth/slice/authSlice.js";
 import { ClipLoader } from "react-spinners";
-import {
-  updateConversationLastMessage,
-  clearConversations,
-} from "./features/home/conversation-list/slice/conversationListSlice.js";
-import {
-  addNewMessage,
-  clearChat,
-} from "./features/home/chat/slice/chatSlice.js";
+import { clearConversations } from "./features/home/conversation-list/slice/conversationListSlice.js";
+import { clearChat } from "./features/home/chat/slice/chatSlice.js";
 
 function App() {
   const navigate = useNavigate();
@@ -81,54 +78,7 @@ function App() {
             handleAuthResponse(data);
           }
           handlePeopleChatResponse(data); //xử lý res chat 1-1
-          //xử lý tin nhắn mới nhận được (SEND_CHAT res)
-          if (
-            data.event === "SEND_CHAT" &&
-            data.status === "success" &&
-            data.data?.type === "people"
-          ) {
-            const messageData = data.data;
-            if (messageData) {
-              //cập nhật last mes trong conv list
-              dispatch(
-                updateConversationLastMessage({
-                  user: messageData.to,
-                  lastMessage: messageData.mes,
-                  time: formatMessageTime(messageData.time || new Date()),
-                })
-              );
-            }
-          }
-
-          // Xử lý tin nhắn nhận được từ người khác (có thể là event khác từ server)
-          // Nếu server gửi tin nhắn mới qua event khác
-          if (
-            data.event === "NEW_MESSAGE" ||
-            (data.event === "SEND_CHAT" &&
-              data.data?.from &&
-              data.data?.from !== localStorage.getItem("user"))
-          ) {
-            const messageData = data.data;
-            if (messageData && messageData.type === "people") {
-              dispatch(
-                addNewMessage({
-                  from: messageData.from,
-                  to: messageData.to,
-                  mes: messageData.mes,
-                  time: formatMessageTime(messageData.time || new Date()),
-                  isSent: false,
-                })
-              );
-
-              dispatch(
-                updateConversationLastMessage({
-                  user: messageData.from,
-                  lastMessage: messageData.mes,
-                  time: formatMessageTime(messageData.time || new Date()),
-                })
-              );
-            }
-          }
+          handlePeopleChatMessage(data, dispatch); //xử lý messages (tin nhắn mới, cập nhật conversation)
         });
         // Xử lý re-login lần đầu
         await processRelogin();

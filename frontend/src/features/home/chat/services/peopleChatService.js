@@ -1,25 +1,18 @@
-import { isSocketReady, sendSocketMessage } from "../../../../socket/socket.js";
+import { sendSocketMessage } from "../../../../socket/socket.js";
+import { formatMessageTime } from "../../../../utils/dateFormat.js";
+import { updateConversationLastMessage } from "../../conversation-list/slice/conversationListSlice.js";
+import { addNewMessage } from "../slice/chatSlice.js";
 
 // Callbacks để xử lý responses từ server
 let peopleChatCallback = {};
 
 //hàm lấy ds tin nhắn 1-1
 export const getPeopleChatMes = ({ name, page = 1 }, callback) => {
-  // Kiểm tra socket đã sẵn sàng chưa
-  if (!isSocketReady()) {
-    if (callback) {
-      callback({
-        status: "error",
-        mes: "Socket chưa được kết nối.",
-      });
-    }
-    return;
-  }
-
   const eventKey = `GET_PEOPLE_CHAT_MES_${name}_${page}`;
   peopleChatCallback[eventKey] = callback;
 
   console.log("Gửi request GET_PEOPLE_CHAT_MES:", { name, page });
+  // sendSocketMessage sẽ tự động reconnect nếu socket chưa sẵn sàng
   sendSocketMessage({
     action: "onchat",
     data: {
@@ -29,6 +22,15 @@ export const getPeopleChatMes = ({ name, page = 1 }, callback) => {
         page,
       },
     },
+  }).catch((error) => {
+    // Nếu reconnect thất bại, gọi callback với error
+    if (callback && peopleChatCallback[eventKey] === callback) {
+      callback({
+        status: "error",
+        mes: error.message || "Socket chưa được kết nối.",
+      });
+      delete peopleChatCallback[eventKey];
+    }
   });
 
   // Timeout sau 20 giây nếu không có response
@@ -46,16 +48,6 @@ export const getPeopleChatMes = ({ name, page = 1 }, callback) => {
 
 //hàm gửi tin nhắn đến người dùng (1-1)
 export const sendPeopleChat = ({ to, mes }, callback) => {
-  if (!isSocketReady()) {
-    if (callback) {
-      callback({
-        status: "error",
-        mes: "Socket chưa được kết nối.",
-      });
-    }
-    return;
-  }
-
   const eventKey = `SEND_CHAT_PEOPLE_${to}_${Date.now()}`;
   if (callback) {
     peopleChatCallback[eventKey] = callback;
@@ -71,21 +63,20 @@ export const sendPeopleChat = ({ to, mes }, callback) => {
         mes: mes,
       },
     },
+  }).catch((error) => {
+    // Nếu reconnect thất bại, gọi callback với error
+    if (callback && peopleChatCallback[eventKey] === callback) {
+      callback({
+        status: "error",
+        mes: error.message || "Socket chưa được kết nối.",
+      });
+      delete peopleChatCallback[eventKey];
+    }
   });
 };
 
 //hàm check user có tồn tại ko
 export const checkUser = ({ user }, callback) => {
-  if (!isSocketReady()) {
-    if (callback) {
-      callback({
-        status: "error",
-        mes: "Socket chưa được kết nối. Vui lòng thử lại sau.",
-      });
-    }
-    return;
-  }
-
   const eventKey = `CHECK_USER_${user}`;
   peopleChatCallback[eventKey] = callback;
 
@@ -97,21 +88,20 @@ export const checkUser = ({ user }, callback) => {
         user: user,
       },
     },
+  }).catch((error) => {
+    // Nếu reconnect thất bại, gọi callback với error
+    if (callback && peopleChatCallback[eventKey] === callback) {
+      callback({
+        status: "error",
+        mes: error.message || "Socket chưa được kết nối.",
+      });
+      delete peopleChatCallback[eventKey];
+    }
   });
 };
 
 //hàm lấy ra ds user
 export const getUserList = (callback) => {
-  if (!isSocketReady()) {
-    if (callback) {
-      callback({
-        status: "error",
-        mes: "Socket chưa được kết nối.",
-      });
-    }
-    return;
-  }
-
   const eventKey = "GET_USER_LIST";
   peopleChatCallback[eventKey] = callback;
 
@@ -120,6 +110,15 @@ export const getUserList = (callback) => {
     data: {
       event: "GET_USER_LIST",
     },
+  }).catch((error) => {
+    // Nếu reconnect thất bại, gọi callback với error
+    if (callback && peopleChatCallback[eventKey] === callback) {
+      callback({
+        status: "error",
+        mes: error.message || "Socket chưa được kết nối.",
+      });
+      delete peopleChatCallback[eventKey];
+    }
   });
 };
 
@@ -175,6 +174,58 @@ export const handlePeopleChatResponse = (message) => {
     if (callback) {
       callback({ status, data, event });
       delete peopleChatCallback["GET_USER_LIST"];
-    } 
+    }
+  }
+};
+
+export const handlePeopleChatMessage = (message, dispatch) => {
+  const { event, status, data } = message;
+  const currentUser = localStorage.getItem("user");
+
+  // Xử lý tin nhắn mới nhận được (SEND_CHAT res)
+  if (
+    event === "SEND_CHAT" &&
+    status === "success" &&
+    data?.type === "people"
+  ) {
+    const messageData = data;
+    if (messageData) {
+      // Cập nhật last mes trong conv list
+      dispatch(
+        updateConversationLastMessage({
+          user: messageData.to,
+          lastMessage: messageData.mes,
+          time: formatMessageTime(messageData.time || new Date()),
+        })
+      );
+    }
+  }
+
+  // Xử lý tin nhắn nhận được từ người khác (có thể là event khác từ server)
+  // Nếu server gửi tin nhắn mới qua event khác
+  if (
+    event === "NEW_MESSAGE" ||
+    (event === "SEND_CHAT" && data?.from && data?.from !== currentUser)
+  ) {
+    const messageData = data;
+    if (messageData && messageData.type === "people") {
+      dispatch(
+        addNewMessage({
+          from: messageData.from,
+          to: messageData.to,
+          mes: messageData.mes,
+          time: formatMessageTime(messageData.time || new Date()),
+          isSent: false,
+        })
+      );
+
+      dispatch(
+        updateConversationLastMessage({
+          user: messageData.from,
+          lastMessage: messageData.mes,
+          time: formatMessageTime(messageData.time || new Date()),
+        })
+      );
+    }
   }
 };
