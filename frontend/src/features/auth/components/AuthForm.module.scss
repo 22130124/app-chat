@@ -1,10 +1,12 @@
+@import "../../../variables";
+
 .form {
   width: 100%;
   max-width: 360px;
   margin: 0 auto;
   padding: 24px;
   background: #fff;
-  border-radius: 8px;
+  border-radius: 20px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
@@ -21,47 +23,57 @@
   }
 
   input {
-    padding: 10px 12px;
-    font-size: 14px;
-    border-radius: 6px;
-    border: 1px solid #ccc;
+    width: 100%;
+    padding: 12px 16px;
+    font-size: 15px;
+    font-weight: 500;
+    color: #333;
+    background-color: #fff;
+    border: 1px solid $primary-light-color;
+    border-radius: 12px;
     outline: none;
+    transition: all 0.3s ease;
 
     &:focus {
-      border-color: #1677ff;
+      border-color: $primary-color;
+      box-shadow: 0 0 0 4px rgba($primary-light-color, 0.15);
+      transform: translateY(-1px);
     }
   }
 }
 
 .submitBtn {
   width: 100%;
-  padding: 10px;
-  font-size: 15px;
+  padding: 12px 16px;
+  font-size: 16px;
   font-weight: 600;
   color: #fff;
-  background: #1677ff;
+  background: linear-gradient(135deg, $primary-color, $primary-light-color);
   border: none;
-  border-radius: 6px;
+  border-radius: 12px;
   cursor: pointer;
+  transition: all 0.3s ease;
 
   &:hover {
-    background: #0958d9;
+    transform: translateY(-2px);
   }
 }
 
 .switchPageBtn {
   width: 100%;
-  margin-top: 10px;
-  padding: 10px;
-  font-size: 15px;
+  margin-top: 12px;
+  padding: 12px 16px;
+  font-size: 16px;
   font-weight: 600;
   color: #fff;
-  background: #939393;
+  background: linear-gradient(135deg, $secondary-color, $secondary-light-color);
   border: none;
-  border-radius: 6px;
+  border-radius: 12px;
   cursor: pointer;
+  transition: all 0.3s ease;
 
   &:hover {
-    background: #6a6a6a;
+    background: linear-gradient(135deg, $secondary-color, $secondary-light-color);
+    transform: translateY(-2px);
   }
 }
