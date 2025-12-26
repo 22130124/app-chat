@@ -5,9 +5,10 @@ export const ConversationItem = ({
   lastMessage,
   time,
   avatarContent,
+  isSelected=false,
 }) => {
   return (
-    <div className={styles.item}>
+    <div className={`${styles.item} ${isSelected ? styles.selected: ""}`}>
       <div className={styles.avatar}>
         <div className={styles.avatarContent}>{avatarContent}</div>
       </div>

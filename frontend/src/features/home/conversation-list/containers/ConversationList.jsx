@@ -1,8 +1,220 @@
 import styles from "./ConversationList.module.scss";
 import { Search } from "lucide-react";
 import { ConversationItem } from "../components/ConversationItem.jsx";
+import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  addConversation,
+  setConversations,
+  setConversationLoading,
+  setSearchQuery,
+  setUsers,
+} from "../slice/conversationListSlice.js";
+import { setCurrentChatUser } from "../../chat/slice/chatSlice.js";
+import {
+  checkUser,
+  getUserList,
+} from "../../chat/services/peopleChatService.js";
+import { ClipLoader } from "react-spinners";
+import { isSocketReady } from "../../../../socket/socket.js";
 
-export const ConversationList = ({groups=[]}) => {
+export const ConversationList = ({ groups = [] }) => {
+  const dispatch = useDispatch();
+  const { conversations, users, searchQuery, loading } = useSelector(
+    (state) => state.conversationList
+  );
+  const { currentChatUser } = useSelector((state) => state.chat);
+  const currentUser = useSelector((state) => state.auth.user);
+  const [localSearchQuery, setLocalSearchQuery] = useState("");
+
+  // Load danh sách users khi có currentUser và socket sẵn sàng
+  useEffect(() => {
+    // Chỉ load nếu:
+    // 1. Đã có currentUser (đã login/relogin xong)
+    // 2. Socket đã sẵn sàng
+    // 3. Chưa có conversations hoặc conversations rỗng
+    if (!currentUser) {
+      return; // Chưa có user, chờ relogin xong
+    }
+
+    if (!isSocketReady()) {
+      return;
+    }
+
+    if (conversations.length > 0) {
+      return; // Đã có data, không cần load lại
+    }
+
+    console.log("Đang load danh sách users...", {
+      currentUser,
+      socketReady: isSocketReady(),
+    });
+    dispatch(setConversationLoading(true));
+    getUserList((response) => {
+      dispatch(setConversationLoading(false));
+      if (response.status === "success" && response.data) {
+        // Giả sử response.data là mảng users hoặc có cấu trúc khác
+        const usersData = Array.isArray(response.data)
+          ? response.data
+          : response.data.users || response.data.list || [];
+
+        // Lọc bỏ user hiện tại và chỉ lấy type 0 (people chat, không phải group)
+        const filteredUsers = usersData.filter((user) => {
+          const userName =
+            typeof user === "string"
+              ? user
+              : user.user || user.name || user.displayName || user;
+
+          const userType = typeof user === "object" ? user.type : undefined;
+          return (
+            userName &&
+            String(userName) !== String(currentUser) &&
+            (userType === 0 || userType === undefined)
+          );
+        });
+
+        dispatch(setUsers(filteredUsers));
+
+        // Tạo conversations từ danh sách users
+        const initialConversations = filteredUsers.map((user) => {
+          const userName =
+            typeof user === "string" ? user : user.user || user.name;
+          return {
+            user: userName,
+            name: userName,
+            lastMessage: "",
+            time: "",
+            avatarContent: userName.charAt(0).toUpperCase(),
+          };
+        });
+
+        dispatch(setConversations(initialConversations));
+        console.log("Đã load danh sách users:", initialConversations.length);
+      } else {
+        console.error("Lỗi khi load danh sách users:", response);
+        dispatch(setUsers([]));
+        dispatch(setConversations([]));
+      }
+    });
+  }, [currentUser, conversations.length, dispatch]); // Chạy khi currentUser thay đổi hoặc conversations rỗng
+
+  // Filter và sắp xếp conversations
+  // 1. Filter dựa trên search query
+  // 2. Sắp xếp: conversations đã nhắn tin (có lastMessage) ở trên ( trong các cái nhắn rồi, thì sắp theo time), chưa nhắn tin ở dưới
+  const filteredConversations = conversations
+    .filter((conv) =>
+      conv.name.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+    .sort((a, b) => {
+      // Kiểm tra conversation có lastMessage hay không (không rỗng)
+      const aHasMessage =
+        a.lastMessage &&
+        a.lastMessage.trim() !== "" &&
+        a.lastMessage !== "Chưa có tin nhắn";
+      const bHasMessage =
+        b.lastMessage &&
+        b.lastMessage.trim() !== "" &&
+        b.lastMessage !== "Chưa có tin nhắn";
+
+      // Ưu tiên: Đã nhắn tin ở trên, Chưa nhắn tin ở dưới
+      if (aHasMessage && !bHasMessage) return -1; // a có message, b không có → a lên trên
+      if (!aHasMessage && bHasMessage) return 1; // a không có, b có message → b lên trên
+
+      // Nếu cả hai đều có message: sắp xếp theo time (mới nhất lên trên)
+      if (aHasMessage && bHasMessage && a.time && b.time) {
+        // Parse time để so sánh (format: "HH:mm dd/MM/yyyy")
+        const parseTime = (timeStr) => {
+          const match = timeStr.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+          if (match) {
+            return new Date(
+              parseInt(match[3]),
+              parseInt(match[2]) - 1,
+              parseInt(match[1])
+            ).getTime();
+          }
+          return 0;
+        };
+        const timeA = parseTime(a.time);
+        const timeB = parseTime(b.time);
+        if (timeA !== timeB) {
+          return timeB - timeA; // Mới nhất lên trên
+        }
+      }
+
+      // Nếu cả hai đều không có message: sắp xếp theo tên (alphabetically) để dễ tìm
+      if (!aHasMessage && !bHasMessage) {
+        return a.name.localeCompare(b.name, "vi");
+      }
+
+      // Giữ nguyên thứ tự nếu không có điều kiện nào khác
+      return 0;
+    });
+
+  const handleSearch = (e) => {
+    const value = e.target.value;
+    setLocalSearchQuery(value);
+    dispatch(setSearchQuery(value));
+  };
+
+  const handleConversationClick = (user) => {
+    if (currentChatUser === user) return;
+    dispatch(setCurrentChatUser(user));
+  };
+
+  const handleSearchSubmit = () => {
+    if (!localSearchQuery.trim()) {
+      return;
+    }
+
+    // Kiểm tra user có tồn tại không
+    dispatch(setConversationLoading(true));
+    checkUser({ user: localSearchQuery.trim() }, (response) => {
+      dispatch(setConversationLoading(true));
+      if (response.status === "success" && response.data) {
+        const searchedUser = localSearchQuery.trim();
+        // Kiểm tra xem conversation đã tồn tại chưa
+        const existingConv = conversations.find(
+          (conv) => conv.user === searchedUser
+        );
+
+        if (!existingConv && searchedUser !== currentUser) {
+          // Thêm conversation mới
+          dispatch(
+            addConversation({
+              user: searchedUser,
+              name: searchedUser,
+              lastMessage: "",
+              time: "",
+              avatarContent: searchedUser.charAt(0).toUpperCase(),
+            })
+          );
+          // Chọn conversation mới
+          dispatch(setCurrentChatUser(searchedUser));
+          // Clear search query
+          setLocalSearchQuery("");
+          dispatch(setSearchQuery(""));
+        } else if (existingConv) {
+          // Chọn conversation đã tồn tại
+          dispatch(setCurrentChatUser(searchedUser));
+          // Clear search query
+          setLocalSearchQuery("");
+          dispatch(setSearchQuery(""));
+        }
+      } else {
+        // User không tồn tại hoặc là chính mình
+        alert(
+          "Người dùng không tồn tại hoặc bạn không thể chat với chính mình"
+        );
+      }
+    });
+  };
+
+  const handleSearchKeyPress = (e) => {
+    if (e.key === "Enter") {
+      handleSearchSubmit();
+    }
+  };
+
   return (
     <div className={styles.container}>
       <div className={styles.header}>
@@ -15,32 +227,71 @@ export const ConversationList = ({groups=[]}) => {
           type="text"
           placeholder="Tìm kiếm cuộc trò chuyện..."
           className={styles.searchInput}
+          value={localSearchQuery}
+          onChange={handleSearch}
+          onKeyPress={handleSearchKeyPress}
         />
       </div>
 
       <div className={styles.list}>
-        {[1, 2].map((u) => (
-          <ConversationItem
-            key={u}
-            name={`Cuộc trò chuyện ${u}`}
-            lastMessage="Tin nhắn gần nhất"
-            time="2h"
-            avatarContent={u}
-          />
-        ))}
-          {/*thêm chat nhóm*/}
-          {groups.map((group)=>(
+        {/* PEOPLE CHAT */}
+        {loading ? (
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              padding: "20px",
+            }}
+          >
+            <ClipLoader size={30} color="#36d7b7" />
+          </div>
+        ) : filteredConversations.length === 0 ? (
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              padding: "20px",
+              color: "#999",
+              fontSize: "14px",
+            }}
+          >
+            {searchQuery
+              ? "Không tìm thấy cuộc trò chuyện"
+              : "Chưa có cuộc trò chuyện nào"}
+          </div>
+        ) : (
+          filteredConversations.map((conv) => (
+            <div
+              key={conv.user}
+              onClick={() => handleConversationClick(conv.user)}
+              style={{ cursor: "pointer" }}
+            >
               <ConversationItem
+                name={conv.name}
+                lastMessage={conv.lastMessage || "Chưa có tin nhắn"}
+                time={conv.time}
+                avatarContent={conv.avatarContent}
+                isSelected={currentChatUser === conv.user}
+              />
+            </div>
+          ))
+        )}
+
+        {/* GROUP CHAT */}
+        {groups.length > 0 &&
+          groups.map((group) => (
+            <ConversationItem
               key={`group-${group.id}`}
               name={group.name}
-              lastMessage={group.lastMessage}
+              lastMessage={group.lastMessage || "Chưa có tin nhắn"}
               time={group.time || "Vừa xong"}
               avatarContent={group.avatarContent}
-              />
+              isGroup
+            />
           ))}
       </div>
     </div>
   );
 };
-
-
