@@ -66,3 +66,11 @@
   margin-top: 4px;
   font-weight: 500;
 }
+
+.messageImage {
+  max-width: 220px;
+  max-height: 300px;
+  border-radius: 10px;
+  object-fit: cover;
+  cursor: pointer;
+}
