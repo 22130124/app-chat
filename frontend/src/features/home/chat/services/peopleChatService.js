@@ -203,10 +203,7 @@ export const handlePeopleChatMessage = (message, dispatch) => {
 
   // Xử lý tin nhắn nhận được từ người khác (có thể là event khác từ server)
   // Nếu server gửi tin nhắn mới qua event khác
-  if (
-    event === "NEW_MESSAGE" ||
-    (event === "SEND_CHAT" && data?.from && data?.from !== currentUser)
-  ) {
+  if (event === "SEND_CHAT" && data?.from && data?.from !== currentUser) {
     const messageData = data;
     if (messageData && messageData.type === "people") {
       dispatch(
