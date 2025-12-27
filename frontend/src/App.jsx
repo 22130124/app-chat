@@ -20,6 +20,8 @@ import { ClipLoader } from "react-spinners";
 import { clearConversations } from "./features/home/conversation-list/slice/conversationListSlice.js";
 import { clearChat } from "./features/home/chat/slice/chatSlice.js";
 
+
+
 function App() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -79,6 +81,7 @@ function App() {
           }
           handlePeopleChatResponse(data); //xử lý res chat 1-1
           handlePeopleChatMessage(data, dispatch); //xử lý messages (tin nhắn mới, cập nhật conversation)
+
         });
         // Xử lý re-login lần đầu
         await processRelogin();
