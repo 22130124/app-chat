@@ -18,7 +18,7 @@ import {
 import { ClipLoader } from "react-spinners";
 import { isSocketReady } from "../../../../socket/socket.js";
 
-export const ConversationList = ({ groups = [] }) => {
+export const ConversationList = ({ groups = [], addGroup }) => {
   const dispatch = useDispatch();
   const { conversations, users, searchQuery, loading } = useSelector(
     (state) => state.conversationList
@@ -26,6 +26,9 @@ export const ConversationList = ({ groups = [] }) => {
   const { currentChatUser } = useSelector((state) => state.chat);
   const currentUser = useSelector((state) => state.auth.user);
   const [localSearchQuery, setLocalSearchQuery] = useState("");
+
+
+
 
   // Load danh sách users khi có currentUser và socket sẵn sàng
   useEffect(() => {
@@ -215,6 +218,7 @@ export const ConversationList = ({ groups = [] }) => {
     }
   };
 
+
   return (
     <div className={styles.container}>
       <div className={styles.header}>
@@ -278,19 +282,18 @@ export const ConversationList = ({ groups = [] }) => {
             </div>
           ))
         )}
-
         {/* GROUP CHAT */}
-        {groups.length > 0 &&
-          groups.map((group) => (
-            <ConversationItem
-              key={`group-${group.id}`}
-              name={group.name}
-              lastMessage={group.lastMessage || "Chưa có tin nhắn"}
-              time={group.time || "Vừa xong"}
-              avatarContent={group.avatarContent}
-              isGroup
-            />
-          ))}
+        {groups.map((group) => (
+            <div key={group.user} onClick={() => handleConversationClick(group.user)}>
+              <ConversationItem
+                  name={group.name}
+                  lastMessage={group.lastMessage || "Chưa có tin nhắn"}
+                  time={group.time}
+                  avatarContent={group.avatarContent}
+                  isSelected={currentChatUser === group.user}
+              />
+            </div>
+            ))}
       </div>
     </div>
   );
