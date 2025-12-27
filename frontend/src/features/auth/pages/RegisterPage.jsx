@@ -1,11 +1,8 @@
 import {AuthForm} from "../components/AuthForm.jsx";
-import styles from "./RegisterPage.module.scss"
-import {logout, register} from "../services/authService.js";
+import styles from "./AuthPage.module.scss"
+import {register} from "../services/authService.js";
 import {toast} from "react-toastify";
 import {useNavigate} from "react-router-dom";
-import {useEffect} from "react";
-import {processLogout} from "../slice/authSlice.js";
-import {useDispatch, useSelector} from "react-redux";
 
 export const RegisterPage = () => {
     const navigate = useNavigate();
@@ -33,10 +30,16 @@ export const RegisterPage = () => {
 
     return (
         <div className={styles.container}>
-            <AuthForm
-                type="register"
-                onSubmit={handleSubmit}
-            />
+            <div className={styles.left}>
+                <img src="/images/auth_background.png" alt=""/>
+            </div>
+            <div className={styles.right}>
+                <h1 className={styles.title}>ĐĂNG KÝ</h1>
+                <AuthForm
+                    type="register"
+                    onSubmit={handleSubmit}
+                />
+            </div>
         </div>
     )
 }

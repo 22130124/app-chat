@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { AppRoutes } from "./routes/AppRoutes.jsx";
-import { toast, ToastContainer } from "react-toastify";
+import { ToastContainer } from "react-toastify";
 import { connectSocket } from "./socket/socket.js";
 import { useEffect, useState } from "react";
 import {
@@ -101,7 +101,7 @@ function App() {
           height: "100vh",
         }}
       >
-        <ClipLoader size={60} color="#36d7b7" />
+        <ClipLoader size={60} color="#a073a4" />
       </div>
     );
   }

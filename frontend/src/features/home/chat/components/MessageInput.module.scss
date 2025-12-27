@@ -13,7 +13,7 @@
   gap: 12px;
   background-color: #ffffff;
   border-radius: 24px;
-  padding: 4px 4px 4px 20px;
+  padding: 4px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
   border: 1px solid rgba(0, 0, 0, 0.06);
   transition: all 0.2s ease;
@@ -38,14 +38,14 @@
   }
 }
 
-.sendButton {
+.sendButton, .uploadImageButton {
   width: 44px;
   height: 44px;
   border-radius: 50%;
   border: none;
   background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
   color: white;
-  cursor: pointer;
+  cursor: pointer !important;
   display: flex;
   align-items: center;
   justify-content: center;

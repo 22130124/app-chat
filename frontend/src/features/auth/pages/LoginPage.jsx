@@ -1,6 +1,6 @@
 import {AuthForm} from "../components/AuthForm.jsx";
-import styles from "./LoginPage.module.scss";
-import {login, logout} from "../services/authService.js";
+import styles from "./AuthPage.module.scss";
+import {login} from "../services/authService.js";
 import {toast} from "react-toastify";
 import {useNavigate} from "react-router-dom";
 import {useDispatch} from "react-redux";
@@ -14,8 +14,7 @@ export const LoginPage = () => {
     const handleSubmit = (formData) => {
         const user = formData.user;
         const pass = formData.pass;
-        login({user, pass},
-            (res) => {
+        login({user, pass}, (res) => {
                 // Đây là callback nhận message từ server
                 if (res.status === "success") {
                     // Lưu user và RE_LOGIN_CODE vào local storage
@@ -38,10 +37,16 @@ export const LoginPage = () => {
 
     return (
         <div className={styles.container}>
-            <AuthForm
-                type="login"
-                onSubmit={handleSubmit}
-            />
+            <div className={styles.left}>
+                <img src="/images/auth_background.png" alt=""/>
+            </div>
+            <div className={styles.right}>
+                <h1 className={styles.title}>ĐĂNG NHẬP</h1>
+                <AuthForm
+                    type="login"
+                    onSubmit={handleSubmit}
+                />
+            </div>
         </div>
     )
 }
