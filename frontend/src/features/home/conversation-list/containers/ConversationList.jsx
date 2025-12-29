@@ -45,10 +45,6 @@ export const ConversationList = ({ groups = [] }) => {
       return; // Đã có data, không cần load lại
     }
 
-    console.log("Đang load danh sách users...", {
-      currentUser,
-      socketReady: isSocketReady(),
-    });
     dispatch(setConversationLoading(true));
     getUserList((response) => {
       dispatch(setConversationLoading(false));

@@ -11,8 +11,6 @@ export const getPeopleChatMes = ({ name, page = 1 }, callback) => {
   const eventKey = `GET_PEOPLE_CHAT_MES_${name}_${page}`;
   peopleChatCallback[eventKey] = callback;
 
-  console.log("Gửi request GET_PEOPLE_CHAT_MES:", { name, page });
-  // sendSocketMessage sẽ tự động reconnect nếu socket chưa sẵn sàng
   sendSocketMessage({
     action: "onchat",
     data: {
@@ -122,7 +120,7 @@ export const getUserList = (callback) => {
   });
 };
 
-//hàm xử ly response từ server cho các event liên quan
+//hàm xử ly response cho request
 export const handlePeopleChatResponse = (message) => {
   const { event, status, data } = message;
 
@@ -178,6 +176,7 @@ export const handlePeopleChatResponse = (message) => {
   }
 };
 
+//push message realtime
 export const handlePeopleChatMessage = (message, dispatch) => {
   const { event, status, data } = message;
   const currentUser = localStorage.getItem("user");
@@ -201,8 +200,7 @@ export const handlePeopleChatMessage = (message, dispatch) => {
     }
   }
 
-  // Xử lý tin nhắn nhận được từ người khác (có thể là event khác từ server)
-  // Nếu server gửi tin nhắn mới qua event khác
+  // Xử lý tin nhắn nhận được từ người khác
   if (event === "SEND_CHAT" && data?.from && data?.from !== currentUser) {
     const messageData = data;
     if (messageData && messageData.type === "people") {

@@ -8,7 +8,7 @@ import { setError, setLoading, setMessages } from "../slice/chatSlice.js";
 import { getPeopleChatMes } from "../services/peopleChatService.js";
 import { ClipLoader } from "react-spinners";
 import { updateConversationLastMessage } from "../../conversation-list/slice/conversationListSlice.js";
-import { formatMessageTime } from "../../../../utils/dateFormat.js";
+import { formatMessage } from "../../../../utils/messageFormat.js";
 
 export const ChatWindow = () => {
   const dispatch = useDispatch();
@@ -24,38 +24,19 @@ export const ChatWindow = () => {
       dispatch(setLoading(true));
       dispatch(setError(null));
 
-      console.log("Đang load messages cho user:", currentChatUser);
-
       getPeopleChatMes({ name: currentChatUser, page: 1 }, (response) => {
         dispatch(setLoading(false));
-        console.log("Response từ getPeopleChatMes:", response);
-
         if (response && response.status === "success") {
           // Xử lý cả trường hợp data là mảng rỗng (không có tin nhắn)
           const messageData = Array.isArray(response.data)
             ? response.data
             : response.data?.messages || [];
 
-          console.log("Message data từ server:", messageData);
-          console.log("Số lượng messages:", messageData.length);
-
           if (messageData.length > 0) {
-            // Có tin nhắn, format và hiển thị
-            const orderedMessages = [...messageData].reverse();
-            const formatMes = orderedMessages.map((msg) => {
-              const fromUser = msg.from || msg.sender || msg.name;
-              const toUser = msg.to || msg.receiver;
-
-              return {
-                text: msg.mes || msg.message || msg.text,
-                time: formatMessageTime(
-                  msg.time || msg.createdAt || msg.createAt || new Date()
-                ),
-                isSent: fromUser === currentUser,
-                from: fromUser,
-                to: toUser,
-              };
-            });
+            const formatMes = formatMessage(
+              messageData,
+              currentUser
+            );
             dispatch(setMessages(formatMes));
             dispatch(setError(null));
 
@@ -87,7 +68,7 @@ export const ChatWindow = () => {
       dispatch(setMessages([]));
       dispatch(setLoading(false));
     }
-  }, [currentChatUser, currentUser, dispatch]);
+  }, [currentChatUser, dispatch]);
 
   // Luôn kéo xuống cuối danh sách khi có tin nhắn mới
   useEffect(() => {
