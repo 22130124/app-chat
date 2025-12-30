@@ -1,3 +1,4 @@
+import { formatMessageTime } from "../../../../utils/dateFormat";
 import styles from "./MessageItem.module.scss";
 
 export const MessageItem = ({text, time, isSent}) => {
@@ -25,7 +26,6 @@ export const MessageItem = ({text, time, isSent}) => {
                         <div className={styles.messageTime}>{time}</div>
                     </div>
                 )}
-
             </div>
         </div>
     );

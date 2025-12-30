@@ -1,5 +1,4 @@
 import { sendSocketMessage } from "../../../../socket/socket.js";
-import { formatMessageTime } from "../../../../utils/dateFormat.js";
 import { updateConversationLastMessage } from "../../conversation-list/slice/conversationListSlice.js";
 import { addNewMessage } from "../slice/chatSlice.js";
 
@@ -191,7 +190,7 @@ export const handlePeopleChatMessage = (message, dispatch) => {
         from: data.name,
         to: data.to,
         mes: data.mes,
-        time: formatMessageTime(data.time || new Date()),
+        time: data.time || new Date().toISOString(),
         isSent,
       })
     );
@@ -201,7 +200,7 @@ export const handlePeopleChatMessage = (message, dispatch) => {
       updateConversationLastMessage({
         user: otherUser,
         lastMessage: data.mes,
-        time: formatMessageTime(data.time || new Date()),
+        time: data.time || new Date().toISOString(),
       })
     );
   }

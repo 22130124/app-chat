@@ -9,6 +9,7 @@ import { getPeopleChatMes } from "../services/peopleChatService.js";
 import { ClipLoader } from "react-spinners";
 import { updateConversationLastMessage } from "../../conversation-list/slice/conversationListSlice.js";
 import { formatMessage } from "../../../../utils/messageFormat.js";
+import { formatMessageTime } from "../../../../utils/dateFormat.js";
 
 export const ChatWindow = () => {
   const dispatch = useDispatch();
@@ -169,14 +170,16 @@ export const ChatWindow = () => {
             Chưa có tin nhắn nào
           </div>
         ) : (
-          messages.map((message, index) => (
-            <MessageItem
-              key={index}
-              text={message.text || message.mes}
-              time={message.time}
-              isSent={message.isSent}
-            />
-          ))
+          messages.map((message, index) => {
+            return (
+              <MessageItem
+                key={index}
+                text={message.text || message.mes}
+                time={formatMessageTime(message.time)}
+                isSent={message.isSent}
+              />
+            );
+          })
         )}
       </section>
 

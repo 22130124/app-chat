@@ -13,7 +13,7 @@ export const useSendMessage = () => {
   const sendMessage = (text) => {
     if (!currentChatUser || !text.trim()) return;
 
-    const time = formatMessageTime(new Date());
+    const time = new Date().toISOString();
 
     // optimistic UI
     dispatch(
