@@ -19,12 +19,12 @@ const chatSlice = createSlice({
   reducers: {
     //set user đang chat
     setCurrentChatUser(state, action) {
-      // Nếu chọn lại đúng user đang chat thì không làm gì để tránh reset state lung tung
-      if (state.currentChatUser === action.payload) return;
-      state.currentChatUser = action.payload;
-      state.messages = [];
+      const user = action.payload;
+      if (state.currentChatUser === user) return;
+      state.currentChatUser = user;
       state.currentPage = 1;
       state.hasMore = true;
+      if (!state.messages[user]) state.messages[user] = [];
     },
     //set message
     setMessages(state, action) {
@@ -36,20 +36,7 @@ const chatSlice = createSlice({
     },
     //dùng khi nhận tin mới
     addNewMessage(state, action) {
-      const message = action.payload;
-      // Chỉ thêm message nếu nó thuộc conversation hiện tại
-      // Message được gửi đi (isSent: true) → to phải là currentChatUser
-      // Message nhận được (isSent: false) → from phải là currentChatUser
-      if (state.currentChatUser) {
-        const isMessageForCurrentChat =
-          (message.isSent && message.to === state.currentChatUser) ||
-          (!message.isSent && message.from === state.currentChatUser);
-
-        if (isMessageForCurrentChat) {
-          state.messages.push(message);
-        }
-      }
-      // Nếu không có currentChatUser, không thêm message (có thể đang ở trang khác)
+      state.messages = [...state.messages, action.payload];
     },
     setLoading(state, action) {
       state.loading = action.payload;

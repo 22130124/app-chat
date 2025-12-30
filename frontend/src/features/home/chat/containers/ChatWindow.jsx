@@ -33,10 +33,7 @@ export const ChatWindow = () => {
             : response.data?.messages || [];
 
           if (messageData.length > 0) {
-            const formatMes = formatMessage(
-              messageData,
-              currentUser
-            );
+            const formatMes = formatMessage(messageData, currentUser);
             dispatch(setMessages(formatMes));
             dispatch(setError(null));
 
@@ -73,9 +70,11 @@ export const ChatWindow = () => {
   // Luôn kéo xuống cuối danh sách khi có tin nhắn mới
   useEffect(() => {
     if (messagesRef.current) {
-      // Dùng requestAnimationFrame để chắc DOM đã render xong
+      const container = messagesRef.current;
+      if (!container) return;
+
       requestAnimationFrame(() => {
-        messagesRef.current.scrollTop = messagesRef.current.scrollHeight;
+        container.scrollTop = container.scrollHeight;
       });
     }
   }, [messages]);

@@ -120,107 +120,93 @@ export const getUserList = (callback) => {
   });
 };
 
-//hàm xử ly response cho request
-export const handlePeopleChatResponse = (message) => {
-  const { event, status, data } = message;
+// PEOPLE CHAT - xử lý response riêng lẻ vì có các callback key khác nhau
+export const handleGetPeopleChatMesResponse = (message) => {
+  const { status, data, event } = message;
 
-  //xử lý res GET_PEOPLE_CHAT_MES
-  if (event === "GET_PEOPLE_CHAT_MES") {
-    const keys = Object.keys(peopleChatCallback).filter((key) =>
-      key.startsWith("GET_PEOPLE_CHAT_MES_")
-    );
-    keys.forEach((key) => {
-      const callback = peopleChatCallback[key];
-      if (callback) {
-        callback({ status, data, event });
-        delete peopleChatCallback[key];
-      }
-    });
-  }
+  const keys = Object.keys(peopleChatCallback).filter((key) =>
+    key.startsWith("GET_PEOPLE_CHAT_MES_")
+  );
 
-  // xử lý res SEND_CHAT (type people)
-  if (event === "SEND_CHAT" && data?.type === "people") {
-    const keys = Object.keys(peopleChatCallback).filter((key) =>
-      key.startsWith("SEND_CHAT_PEOPLE_")
-    );
-    keys.forEach((key) => {
-      const callback = peopleChatCallback[key];
-      if (callback) {
-        callback({ status, data, event });
-        delete peopleChatCallback[key];
-      }
-    });
-  }
+  keys.forEach((key) => {
+    const callback = peopleChatCallback[key];
+    callback?.({ status, data, event });
+    delete peopleChatCallback[key];
+  });
+};
 
-  //xử lý res CHECK_USER
-  if (event === "CHECK_USER") {
-    const keys = Object.keys(peopleChatCallback).filter((key) =>
-      key.startsWith("CHECK_USER_")
-    );
-    keys.forEach((key) => {
-      const callback = peopleChatCallback[key];
-      if (callback) {
-        callback({ status, data, event });
-        delete peopleChatCallback[key];
-      }
-    });
-  }
+export const handleSendChatResponse = (message) => {
+  const { status, data, event } = message;
 
-  // Xử lý GET_USER_LIST response
-  if (event === "GET_USER_LIST") {
-    const callback = peopleChatCallback["GET_USER_LIST"];
-    if (callback) {
-      callback({ status, data, event });
-      delete peopleChatCallback["GET_USER_LIST"];
-    }
-  }
+  const keys = Object.keys(peopleChatCallback).filter((key) =>
+    key.startsWith("SEND_CHAT_PEOPLE_")
+  );
+
+  keys.forEach((key) => {
+    const callback = peopleChatCallback[key];
+    callback?.({ status, data, event });
+    delete peopleChatCallback[key];
+  });
+};
+
+export const handleCheckUserResponse = (message) => {
+  const { status, data, event } = message;
+
+  const keys = Object.keys(peopleChatCallback).filter((key) =>
+    key.startsWith("CHECK_USER_")
+  );
+
+  keys.forEach((key) => {
+    const callback = peopleChatCallback[key];
+    callback?.({ status, data, event });
+    delete peopleChatCallback[key];
+  });
+};
+
+export const handleGetUserListResponse = (message) => {
+  const { status, data, event } = message;
+
+  const callback = peopleChatCallback["GET_USER_LIST"];
+  callback?.({ status, data, event });
+  delete peopleChatCallback["GET_USER_LIST"];
 };
 
 //push message realtime
 export const handlePeopleChatMessage = (message, dispatch) => {
-  const { event, status, data } = message;
+  const { status, data } = message;
   const currentUser = localStorage.getItem("user");
 
-  // Xử lý tin nhắn mới nhận được (SEND_CHAT res)
-  if (
-    event === "SEND_CHAT" &&
-    status === "success" &&
-    data?.type === "people"
-  ) {
-    const messageData = data;
-    if (messageData) {
-      // Cập nhật last mes trong conv list
-      dispatch(
-        updateConversationLastMessage({
-          user: messageData.to,
-          lastMessage: messageData.mes,
-          time: formatMessageTime(messageData.time || new Date()),
-        })
-      );
-    }
+  if (status !== "success" || !data || data.type === undefined) {
+    return;
   }
 
-  // Xử lý tin nhắn nhận được từ người khác
-  if (event === "SEND_CHAT" && data?.from && data?.from !== currentUser) {
-    const messageData = data;
-    if (messageData && messageData.type === "people") {
-      dispatch(
-        addNewMessage({
-          from: messageData.from,
-          to: messageData.to,
-          mes: messageData.mes,
-          time: formatMessageTime(messageData.time || new Date()),
-          isSent: false,
-        })
-      );
+  //0:people, 1:room
+  if (data.type === 0) {
+    const isSent = data.name === currentUser;
+    const otherUser = isSent ? data.to : data.from;
 
-      dispatch(
-        updateConversationLastMessage({
-          user: messageData.from,
-          lastMessage: messageData.mes,
-          time: formatMessageTime(messageData.time || new Date()),
-        })
-      );
-    }
+    // Thêm tin nhắn vào mảng messages[]
+    dispatch(
+      addNewMessage({
+        from: data.name,
+        to: data.to,
+        mes: data.mes,
+        time: formatMessageTime(data.time || new Date()),
+        isSent,
+      })
+    );
+
+    // Cập nhật last message cho conversation list
+    dispatch(
+      updateConversationLastMessage({
+        user: otherUser,
+        lastMessage: data.mes,
+        time: formatMessageTime(data.time || new Date()),
+      })
+    );
+  }
+
+  if (data.type === 1) {
+    // Ngân làm vào đây nha
   }
 };

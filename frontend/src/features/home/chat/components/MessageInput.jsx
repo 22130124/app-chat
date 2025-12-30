@@ -5,6 +5,7 @@ import { MdAddAPhoto } from "react-icons/md";
 import { useSendMessage } from "../hooks/useSendMessage.js";
 import { useSendImage } from "../hooks/useSendImage.js";
 import { useSelector } from "react-redux";
+import { toast } from "react-toastify";
 
 export const MessageInput = ({ placeholder = "Nhập tin nhắn..." }) => {
   const [message, setMessage] = useState("");
