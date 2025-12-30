@@ -2,30 +2,47 @@ import { useState } from "react";
 import { toast } from "react-toastify";
 import styles from "./CreateGrooup.module.scss";
 import {createGroupChat} from "../services/groupService.js";
+import {useDispatch, useSelector} from "react-redux";
 
 
-export const CreateGroup = ({ onClose, addGroup, existingGroups }) => {
+
+export const CreateGroup = ({ onClose}) => {
     const [groupName, setGroupName] = useState("");
     const [loading, setLoading] = useState(false);
-
-    const handleSubmit = () => {
-        const trimmedName = groupName.trim();
-        if (!trimmedName) {
-            toast.error("Vui lòng nhập tên nhóm");
-            return;
-        }
-        // Kiểm tra trùng tên
-        if (existingGroups.some((g) => g.name === trimmedName)) {
+    const dispatch = useDispatch();
+            const conversations = useSelector(
+                (state) => state.conversationList.conversations
+            );
+        const handleSubmit = async () => {
+            const trimmedName = groupName.trim();
+            if (!trimmedName) {
+                toast.error("Vui lòng nhập tên nhóm");
+                return;
+            }
+            // Kiểm tra trùng tên
+            if (
+                conversations.some(
+                (conv) =>
+                    conv.name.toLowerCase() === trimmedName.toLowerCase()
+            )
+        ) {
             toast.error(`Nhóm "${trimmedName}" đã tồn tại`);
             return;
         }
-        setLoading(true);
-        // gọi api tạo nhóm
-        createGroupChat(groupName);
-        addGroup(trimmedName);
-        toast.success(`Nhóm ${trimmedName} đã được tạo!`);
-        setLoading(false);
-        onClose();
+
+        try {
+            setLoading(true);
+            // gọi api tạo nhóm
+            await createGroupChat({name: trimmedName});
+            console.log("[CREATE_GROUP UI] after sendSocketMessage");
+
+            toast.success(`Nhóm ${trimmedName} đã được tạo!`);
+            onClose();
+        } catch (e) {
+            console.log("Tao nhóm thất bại");
+        } finally {
+            setLoading(false);
+        }
     };
 
 

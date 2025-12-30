@@ -6,11 +6,14 @@ import {useEffect} from "react";
 import {useState} from "react";
 import {toast} from "react-toastify";
 import { CreateGroup } from "../chat/components/CreateGroup.jsx";
+import { useDispatch } from "react-redux";
+import { addConversation } from "../conversation-list/slice/conversationListSlice.js";
 
 export const HomePage = () => {
 
     const [showCreateGroup, setShowCreateGroup] =useState(false);
     const [groups, setGroups] = useState([]);
+    const dispatch = useDispatch();
 
         // Xử lý khi người truy cập trang
         useEffect(() => {
@@ -21,19 +24,32 @@ export const HomePage = () => {
         }, [])
 
     // thêm nhóm vừa tạo lên giao diện
-    const addGroup = (groupName) => {
-        if (groups.some(g => g.name === groupName)) return;
+    // const addGroup = (groupName) => {
+    //     if (groups.some(g => g.name === groupName)) return;
+    //
+    //     setGroups(prev => [
+    //         ...prev,
+    //         {
+    //             name: groupName,
+    //             type: "group",
+    //             lastMessage: "",
+    //             time: "",
+    //         },
+    //     ]);
+    // };
 
-        setGroups(prev => [
-            ...prev,
-            {
+    const addGroup = (groupName) => {
+        dispatch(
+            addConversation({
+                id: `group_${groupName}`,
                 user: groupName,
                 name: groupName,
+                type: "group",
+                joined: true,
                 lastMessage: "",
                 time: "",
-                avatarContent: groupName.charAt(0).toUpperCase(),
-            },
-        ]);
+            })
+        );
     };
 
     return (
@@ -57,7 +73,7 @@ export const HomePage = () => {
                 {showCreateGroup && (
                     <CreateGroup onClose={() => setShowCreateGroup(false)}
                                  addGroup={addGroup}
-                                 existingGroups={groups}/>
+                                />
                 )}
             </div>
         );
