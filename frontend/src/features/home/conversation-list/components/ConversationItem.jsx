@@ -1,3 +1,4 @@
+import { formatMessageTime } from "../../../../utils/dateFormat";
 import styles from "./ConversationItem.module.scss";
 
 export const ConversationItem = ({
@@ -15,7 +16,7 @@ export const ConversationItem = ({
       <div className={styles.info}>
         <div className={styles.nameRow}>
           <div className={styles.name}>{name}</div>
-          <div className={styles.time}>{time}</div>
+          <div className={styles.time}>{time ? formatMessageTime(time) : ""}</div>
         </div>
         <div className={styles.lastMessage}>{lastMessage}</div>
       </div>

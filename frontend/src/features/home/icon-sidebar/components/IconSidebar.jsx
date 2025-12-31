@@ -3,10 +3,6 @@ import {useState} from "react";
 import styles from "./IconSidebar.module.scss";
 import {FaPowerOff} from "react-icons/fa";
 import ConfirmModal from "../../../../components/ConfirmModal.jsx";
-import {logout} from "../../../auth/services/authService.js";
-import {toast} from "react-toastify";
-import {processLogout} from "../../../auth/slice/authSlice.js";
-import {useDispatch} from "react-redux";
 import {useNavigate} from "react-router-dom";
 
 export const IconSidebar = ({onCreateGroup}) => {
