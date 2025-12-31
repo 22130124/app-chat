@@ -14,6 +14,9 @@ import { setCurrentChatUser } from "../../chat/slice/chatSlice.js";
 import { checkUser, getUserList } from "../../chat/services/peopleChatService.js";
 import { ClipLoader } from "react-spinners";
 import { isSocketReady } from "../../../../socket/socket.js";
+import {JoinGroupModal} from "../../chat/components/JoinGroupModal.jsx";
+import { getJoinedGroups, saveJoinedGroup } from "../../../../utils/joinGroupStorage";
+
 
 export const ConversationList = ({ groups = [], addGroup }) => {
     const dispatch = useDispatch();
@@ -24,6 +27,29 @@ export const ConversationList = ({ groups = [], addGroup }) => {
     const currentUser = useSelector((state) => state.auth.user);
     const [localSearchQuery, setLocalSearchQuery] = useState("");
 
+    useEffect(() => {
+        if (!currentUser || conversations.length === 0) return;
+
+        const joinedGroups = getJoinedGroups(currentUser);
+
+        let changed = false;
+
+        const updated = conversations.map(conv => {
+            if (conv.type === 1 && joinedGroups.includes(conv.name)) {
+                if (!conv.isJoined) {
+                    changed = true;
+                    return { ...conv, isJoined: true };
+                }
+            }
+            return conv;
+        });
+
+        if (changed) {
+            dispatch(setConversations(updated));
+        }
+    }, [currentUser]);
+
+    const [joinGroupModal, setJoinGroupModal] = useState({visible: false,groupName:""});
     // Load danh sách users khi có currentUser và socket sẵn sàng
     useEffect(() => {
         // Chỉ load nếu:
@@ -59,26 +85,30 @@ export const ConversationList = ({ groups = [], addGroup }) => {
                     return userName && String(userName) !== String(currentUser);
                 });
 
-                dispatch(setUsers(filteredUsers));
+                dispatch(setUsers(filteredUsers.filter(u => u.type === 0)));
 
+                const joinedGroups = getJoinedGroups(currentUser);
+                const currentUsername = currentUser?.username || currentUser;
                 // Tạo conversations từ danh sách users
                 const initialConversations = filteredUsers.map((user) => {
+
                     const userName =
                         typeof user === "string" ? user : user.user || user.name;
-                    const userType = typeof user === "object" ? 0 : 0; // default type 0
+                    const userType = typeof user === "object" ? user.type:0; // default type 0
                     const isGroup = userType === 1;
+                    const groupInfo = groups.find(g => g.name === userName);
 
                     return {
-                        id: isGroup ? `group_${userName}` : `user_${userName}`,
-                        type: isGroup ? "group" : "user",
+                        id: isGroup ? `${userName}` : `user_${userName}`,
+                        type: userType,
                         user: userName,
                         name: userName,
                         lastMessage: "",
                         time: "",
                         avatarContent: userName.charAt(0).toUpperCase(),
+                        isJoined: joinedGroups.includes(userName),
                     };
                 });
-
                 dispatch(setConversations(initialConversations));
                 console.log("Đã load danh sách users:", initialConversations.length);
             } else {
@@ -89,12 +119,17 @@ export const ConversationList = ({ groups = [], addGroup }) => {
         });
     }, [currentUser, conversations.length, dispatch]);
 
+    // gộp các conversation
+    const allConversations = conversations.map(c => ({
+        ...c,
+        isGroup: c.type === 1,
+    }));
     // Filter và sắp xếp conversations
     // 1. Filter dựa trên search query
     // 2. Sắp xếp: conversations đã nhắn tin (có lastMessage) ở trên, chưa nhắn tin ở dưới
-    const filteredConversations = conversations
+    const filteredConversations = allConversations
         .filter((conv) =>
-            conv.name.toLowerCase().includes(searchQuery.toLowerCase())
+            (conv.name || "").toString().toLowerCase().includes(searchQuery.toLowerCase())
         )
         .sort((a, b) => {
             const aHasMessage =
@@ -139,8 +174,23 @@ export const ConversationList = ({ groups = [], addGroup }) => {
     };
 
     const handleConversationClick = (user) => {
-        if (currentChatUser === user) return;
-        dispatch(setCurrentChatUser(user));
+        const conv = conversations.find(c=>c.user===user);
+        if(!conv) return;
+
+
+        if(conv.type===0) { // chat 1-1
+            if (currentChatUser === user) return;
+            dispatch(setCurrentChatUser(user));
+        }else if(conv.type === 1){
+            const isJoined = conv.isJoined || false;
+            if (isJoined) {
+                dispatch(setCurrentChatUser(user));
+            } else {
+                setJoinGroupModal({ visible: true, groupName: conv.name });
+                console.log(conv.name, conv.isJoined);
+
+            }
+        }
     };
 
     const handleSearchSubmit = () => {
@@ -166,6 +216,7 @@ export const ConversationList = ({ groups = [], addGroup }) => {
                             lastMessage: "",
                             time: "",
                             avatarContent: searchedUser.charAt(0).toUpperCase(),
+
                         })
                     );
                     // Chọn conversation mới
@@ -236,41 +287,48 @@ export const ConversationList = ({ groups = [], addGroup }) => {
                             ? "Không tìm thấy cuộc trò chuyện"
                             : "Chưa có cuộc trò chuyện nào"}
                     </div>
+
                 ) : (
                     filteredConversations.map((conv) => (
-                        <div
-                            key={conv.user}
+                        <ConversationItem
+                            key={conv.id}
+                            name={conv.name}
+                            lastMessage={conv.lastMessage || "Chưa có tin nhắn"}
+                            time={conv.time}
+                            avatarContent={conv.isGroup ? undefined : conv.avatarContent}
+                            isGroup={conv.isGroup}
+                            isJoined={conv.isJoined}
+                            isSelected={currentChatUser === conv.user}
                             onClick={() => handleConversationClick(conv.user)}
-                            style={{ cursor: "pointer" }}
-                        >
-                            <ConversationItem
-                                name={conv.name}
-                                lastMessage={conv.lastMessage || "Chưa có tin nhắn"}
-                                time={conv.time}
-                                avatarContent={conv.avatarContent}
-                                isGroup={true}
-                                isSelected={currentChatUser === conv.user}
-                            />
-                        </div>
+                            style={{cursor:"pointer"}}
+                        />
+
                     ))
                 )}
-
-                {/* GROUP CHAT */}
-                {groups.map((group) => (
-                    <div
-                        key={group.user}
-                        onClick={() => handleConversationClick(group.user)}
-                    >
-                        <ConversationItem
-                            name={group.name}
-                            lastMessage={group.lastMessage || "Chưa có tin nhắn"}
-                            time={group.time}
-                            avatarContent={group.avatarContent}
-                            isSelected={currentChatUser === group.user}
-                        />
-                    </div>
-                ))}
             </div>
+            {/*modal join group*/}
+            {joinGroupModal.visible && (
+                <JoinGroupModal
+                    groupName={joinGroupModal.groupName}
+                    onClose={() => setJoinGroupModal({ visible: false, groupName: "" })}
+                    onJoined={(groupName) => {
+                        const group =
+                            typeof groupName === "string" ? groupName : groupName.name;
+                        saveJoinedGroup(currentUser, group);
+                        const convIndex = conversations.findIndex(c => c.name === group);
+                        if (convIndex >= 0) {
+                            const updated = [...conversations];
+                            updated[convIndex] = {
+                                ...updated[convIndex],
+                                isJoined: true
+                            };
+                            dispatch(setConversations(updated));
+                            dispatch(setCurrentChatUser(updated[convIndex].user));
+                        }
+                        setJoinGroupModal({ visible: false, groupName: "" });
+                    }}
+                />
+            )}
         </div>
     );
 };

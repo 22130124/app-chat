@@ -9,7 +9,7 @@ const rootReducer = combineReducers({
     auth: authReducer,
     chat:chatReducer,
     conversationList:conversationListReducer,
-    group: groupReducer,
+
 });
 
 export default rootReducer;

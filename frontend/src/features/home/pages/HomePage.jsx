@@ -6,14 +6,15 @@ import {useEffect} from "react";
 import {useState} from "react";
 import {toast} from "react-toastify";
 import { CreateGroup } from "../chat/components/CreateGroup.jsx";
-import { useDispatch } from "react-redux";
 import { addConversation } from "../conversation-list/slice/conversationListSlice.js";
+import {useDispatch, useSelector} from "react-redux";
+
 
 export const HomePage = () => {
 
     const [showCreateGroup, setShowCreateGroup] =useState(false);
-    const [groups, setGroups] = useState([]);
     const dispatch = useDispatch();
+    const conversations = useSelector(state => state.conversationList.conversations);
 
         // Xử lý khi người truy cập trang
         useEffect(() => {
@@ -24,33 +25,21 @@ export const HomePage = () => {
         }, [])
 
     // thêm nhóm vừa tạo lên giao diện
-    // const addGroup = (groupName) => {
-    //     if (groups.some(g => g.name === groupName)) return;
-    //
-    //     setGroups(prev => [
-    //         ...prev,
-    //         {
-    //             name: groupName,
-    //             type: "group",
-    //             lastMessage: "",
-    //             time: "",
-    //         },
-    //     ]);
-    // };
-
     const addGroup = (groupName) => {
-        dispatch(
-            addConversation({
-                id: `group_${groupName}`,
-                user: groupName,
-                name: groupName,
-                type: "group",
-                joined: true,
-                lastMessage: "",
-                time: "",
-            })
-        );
+        const nameStr = String(groupName);
+        const newGroupConv = {
+            id: `group_${groupName}`,
+            type: 1, // nhóm
+            user: nameStr,
+            name: nameStr,
+            lastMessage: "",
+            time: "",
+            avatarContent: null, // icon nhóm
+            isGroup: true,
+        };
+        dispatch(addConversation(newGroupConv));
     };
+
 
     return (
             <div className={styles.container}>
@@ -62,7 +51,7 @@ export const HomePage = () => {
 
                 {/* Cột 2: Lịch sử trò chuyện */}
                 <div className={styles.conversation_list}>
-                    <ConversationList groups={groups}/>
+                    <ConversationList />
                 </div>
 
                 {/* Cột 3: Giao diện nhắn tin */}
@@ -73,6 +62,8 @@ export const HomePage = () => {
                 {showCreateGroup && (
                     <CreateGroup onClose={() => setShowCreateGroup(false)}
                                  addGroup={addGroup}
+                                 groups={conversations.filter(c => c.type === 1)}
+
                                 />
                 )}
             </div>
