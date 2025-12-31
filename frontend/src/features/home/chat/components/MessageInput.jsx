@@ -1,11 +1,12 @@
 import { useRef, useState } from "react";
 import styles from "./MessageInput.module.scss";
 import { Send } from "lucide-react";
-import { MdAddAPhoto } from "react-icons/md";
+import { MdAddAPhoto, MdVideoLibrary } from "react-icons/md";
 import { useSendMessage } from "../hooks/useSendMessage.js";
 import { useSendImage } from "../hooks/useSendImage.js";
 import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
+import { useSendVideo } from "../hooks/useSendVideo.js";
 
 export const MessageInput = ({ placeholder = "Nhập tin nhắn..." }) => {
   const [message, setMessage] = useState("");
@@ -13,9 +14,11 @@ export const MessageInput = ({ placeholder = "Nhập tin nhắn..." }) => {
   const { currentChatUser } = useSelector((state) => state.chat);
   const { sendMessage } = useSendMessage();
   const { sendImage } = useSendImage();
+  const videoInputRef = useRef(null);
+  const { sendVideo } = useSendVideo();
 
   const handleSend = () => {
-    if (!message.trim())return;
+    if (!message.trim()) return;
     if (!currentChatUser) {
       toast.error("Vui lòng chọn 1 cuộc trò chuyện");
       return;
@@ -27,6 +30,10 @@ export const MessageInput = ({ placeholder = "Nhập tin nhắn..." }) => {
 
   const handleUploadAndSendImage = () => {
     fileInputRef.current.click();
+  };
+
+  const handleUploadAndSendVideo = () => {
+    videoInputRef.current.click();
   };
 
   const handleKeyDown = (e) => {
@@ -44,6 +51,12 @@ export const MessageInput = ({ placeholder = "Nhập tin nhắn..." }) => {
           onClick={handleUploadAndSendImage}
         >
           <MdAddAPhoto size={20} />
+        </button>
+        <button
+          className={styles.uploadImageButton}
+          onClick={handleUploadAndSendVideo}
+        >
+          <MdVideoLibrary size={20} />
         </button>
         <input
           type="text"
@@ -70,6 +83,13 @@ export const MessageInput = ({ placeholder = "Nhập tin nhắn..." }) => {
           ref={fileInputRef}
           style={{ display: "none" }}
           onChange={sendImage}
+        />
+        <input
+          type="file"
+          accept="video/*"
+          ref={videoInputRef}
+          style={{ display: "none" }}
+          onChange={sendVideo}
         />
       </div>
     </footer>

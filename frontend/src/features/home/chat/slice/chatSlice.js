@@ -24,7 +24,7 @@ const chatSlice = createSlice({
       state.currentChatUser = user;
       state.currentPage = 1;
       state.hasMore = true;
-      if (!state.messages[user]) state.messages[user] = [];
+      state.messages = [];
     },
     //set message
     setMessages(state, action) {

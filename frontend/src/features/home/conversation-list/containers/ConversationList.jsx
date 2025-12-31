@@ -17,6 +17,7 @@ import {
 } from "../../chat/services/peopleChatService.js";
 import { ClipLoader } from "react-spinners";
 import { isSocketReady } from "../../../../socket/socket.js";
+import { fetchInitialConversations } from "../services/conversationListService.js";
 
 export const ConversationList = ({ groups = [] }) => {
   const dispatch = useDispatch();
@@ -29,122 +30,20 @@ export const ConversationList = ({ groups = [] }) => {
 
   // Load danh sách users khi có currentUser và socket sẵn sàng
   useEffect(() => {
-    // Chỉ load nếu:
-    // 1. Đã có currentUser (đã login/relogin xong)
-    // 2. Socket đã sẵn sàng
-    // 3. Chưa có conversations hoặc conversations rỗng
-    if (!currentUser) {
-      return; // Chưa có user, chờ relogin xong
-    }
-
-    if (!isSocketReady()) {
-      return;
-    }
-
-    if (conversations.length > 0) {
-      return; // Đã có data, không cần load lại
-    }
+    if (!currentUser || conversations.length > 0 || !isSocketReady()) return;
 
     dispatch(setConversationLoading(true));
-    getUserList((response) => {
+
+    fetchInitialConversations(currentUser, (data) => {
       dispatch(setConversationLoading(false));
-      if (response.status === "success" && response.data) {
-        // Giả sử response.data là mảng users hoặc có cấu trúc khác
-        const usersData = Array.isArray(response.data)
-          ? response.data
-          : response.data.users || response.data.list || [];
-
-        // Lọc bỏ user hiện tại và chỉ lấy type 0 (people chat, không phải group)
-        const filteredUsers = usersData.filter((user) => {
-          const userName =
-            typeof user === "string"
-              ? user
-              : user.user || user.name || user.displayName || user;
-
-          const userType = typeof user === "object" ? user.type : undefined;
-          return (
-            userName &&
-            String(userName) !== String(currentUser) &&
-            (userType === 0 || userType === undefined)
-          );
-        });
-
-        dispatch(setUsers(filteredUsers));
-
-        // Tạo conversations từ danh sách users
-        const initialConversations = filteredUsers.map((user) => {
-          const userName =
-            typeof user === "string" ? user : user.user || user.name;
-          return {
-            user: userName,
-            name: userName,
-            lastMessage: "",
-            time: "",
-            avatarContent: userName.charAt(0).toUpperCase(),
-          };
-        });
-
-        dispatch(setConversations(initialConversations));
-        console.log("Đã load danh sách users:", initialConversations.length);
-      } else {
-        console.error("Lỗi khi load danh sách users:", response);
-        dispatch(setUsers([]));
-        dispatch(setConversations([]));
-      }
+      dispatch(setConversations(data));
     });
-  }, [currentUser, conversations.length, dispatch]); // Chạy khi currentUser thay đổi hoặc conversations rỗng
+  }, [currentUser]);
 
   // Filter và sắp xếp conversations
-  // 1. Filter dựa trên search query
-  // 2. Sắp xếp: conversations đã nhắn tin (có lastMessage) ở trên ( trong các cái nhắn rồi, thì sắp theo time), chưa nhắn tin ở dưới
-  const filteredConversations = conversations
-    .filter((conv) =>
-      conv.name.toLowerCase().includes(searchQuery.toLowerCase())
-    )
-    .sort((a, b) => {
-      // Kiểm tra conversation có lastMessage hay không (không rỗng)
-      const aHasMessage =
-        a.lastMessage &&
-        a.lastMessage.trim() !== "" &&
-        a.lastMessage !== "Chưa có tin nhắn";
-      const bHasMessage =
-        b.lastMessage &&
-        b.lastMessage.trim() !== "" &&
-        b.lastMessage !== "Chưa có tin nhắn";
-
-      // Ưu tiên: Đã nhắn tin ở trên, Chưa nhắn tin ở dưới
-      if (aHasMessage && !bHasMessage) return -1; // a có message, b không có → a lên trên
-      if (!aHasMessage && bHasMessage) return 1; // a không có, b có message → b lên trên
-
-      // Nếu cả hai đều có message: sắp xếp theo time (mới nhất lên trên)
-      if (aHasMessage && bHasMessage && a.time && b.time) {
-        // Parse time để so sánh (format: "HH:mm dd/MM/yyyy")
-        const parseTime = (timeStr) => {
-          const match = timeStr.match(/(\d{2})\/(\d{2})\/(\d{4})/);
-          if (match) {
-            return new Date(
-              parseInt(match[3]),
-              parseInt(match[2]) - 1,
-              parseInt(match[1])
-            ).getTime();
-          }
-          return 0;
-        };
-        const timeA = parseTime(a.time);
-        const timeB = parseTime(b.time);
-        if (timeA !== timeB) {
-          return timeB - timeA; // Mới nhất lên trên
-        }
-      }
-
-      // Nếu cả hai đều không có message: sắp xếp theo tên (alphabetically) để dễ tìm
-      if (!aHasMessage && !bHasMessage) {
-        return a.name.localeCompare(b.name, "vi");
-      }
-
-      // Giữ nguyên thứ tự nếu không có điều kiện nào khác
-      return 0;
-    });
+  const filteredConversations = conversations.filter((conv) =>
+    conv.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   const handleSearch = (e) => {
     const value = e.target.value;
@@ -266,7 +165,7 @@ export const ConversationList = ({ groups = [] }) => {
             >
               <ConversationItem
                 name={conv.name}
-                lastMessage={conv.lastMessage || "Chưa có tin nhắn"}
+                lastMessage={conv.lastMessage}
                 time={conv.time}
                 avatarContent={conv.avatarContent}
                 isSelected={currentChatUser === conv.user}
