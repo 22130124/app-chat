@@ -47,7 +47,7 @@ export const ConversationList = ({ groups = [], addGroup }) => {
         if (changed) {
             dispatch(setConversations(updated));
         }
-    }, [currentUser]);
+    }, [currentUser, conversations]);
 
     const [joinGroupModal, setJoinGroupModal] = useState({visible: false,groupName:""});
     // Load danh sách users khi có currentUser và socket sẵn sàng

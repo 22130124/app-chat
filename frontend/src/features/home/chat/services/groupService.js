@@ -46,3 +46,34 @@ try {
 }
 };
 
+// lấy tin nhắn nhóm chat
+export const getMessageGroup = ({name, page})=>{
+    console.log("Đang lấy tin nhắn nhóm: ", name);
+    sendSocketMessage({
+        action: "onchat",
+        data:{
+            event: "GET_ROOM_CHAT_MES",
+            data: {
+                name, page
+            },
+        }
+    });
+};
+
+// gửi tin nhắn nhóm
+export const sendChatGroup = ({name, message})=>{
+    console.log("Gửi tin nhắn nhóm");
+    sendSocketMessage({
+        action: "onchat",
+        data: {
+            event: "SEND_CHAT",
+            data: {
+                type: "room",
+                to:name,
+                mes: message,
+            },
+        }
+    });
+
+};
+
