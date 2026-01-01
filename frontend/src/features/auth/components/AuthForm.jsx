@@ -17,12 +17,10 @@ export const AuthForm = ({ type = "login", onSubmit }) => {
     useEffect(() => {
         // Nếu người dùng đã đăng nhập thì đăng xuất tài khoản khi truy cập vào trang này
         if (isLoggedIn) {
-            console.log("logged in");
             logout((res) => {
-                console.log(res)
-                console.log(res.status);
                 if (res.status === "success") {
-                    toast.warning("Đã đăng xuất tài khoản")
+                    toast.dismiss()
+                    toast("Đã đăng xuất tài khoản")
                     dispatch(processLogout())
                 }
             })

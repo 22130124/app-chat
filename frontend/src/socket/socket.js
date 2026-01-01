@@ -46,6 +46,7 @@ export const connectSocket = (onMessageCallback) => {
       try {
         // Parse về JSON
         const data = JSON.parse(event.data);
+        console.log("SOCKET RECEIVE", data);
         // Nếu có callback thì gọi callback
         messageHandler?.(data);
       } catch (err) {
