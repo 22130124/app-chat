@@ -53,10 +53,10 @@ const conversationListSlide = createSlice({
       state.error = action.payload;
     },
     clearConversations(state) {
-      (state.conversations = []),
-        (state.users = []),
-        (state.searchQuery = ""),
-        (state.loading = false);
+      state.conversations = [],
+      state.users = [],
+      state.searchQuery = "",
+      state.loading = false;
       state.error = null;
     },
   },

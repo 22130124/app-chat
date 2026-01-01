@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { AppRoutes } from "./routes/AppRoutes.jsx";
-import { toast, ToastContainer } from "react-toastify";
+import { ToastContainer } from "react-toastify";
 import { connectSocket } from "./socket/socket.js";
 import { useEffect, useState } from "react";
 import {
@@ -8,8 +8,11 @@ import {
   relogin,
 } from "./features/auth/services/authService.js";
 import {
+  handleCheckUserResponse,
+  handleGetPeopleChatMesResponse,
+  handleGetUserListResponse,
   handlePeopleChatMessage,
-  handlePeopleChatResponse,
+  handleSendChatResponse,
 } from "./features/home/chat/services/peopleChatService.js";
 import { useDispatch } from "react-redux";
 import {
@@ -71,17 +74,41 @@ function App() {
       try {
         // Kết nối socket
         await connectSocket((data) => {
+          const event = data.event;
+
+          //Auth event
           if (
-            data.event === "REGISTER" ||
-            data.event === "LOGIN" ||
-            data.event === "RE_LOGIN" ||
-            data.event === "LOGOUT"
+            event === "REGISTER" ||
+            event === "LOGIN" ||
+            event === "RE_LOGIN" ||
+            event === "LOGOUT"
           ) {
             handleAuthResponse(data);
+            return;
           }
-          handlePeopleChatResponse(data); //xử lý res chat 1-1
-          handlePeopleChatMessage(data, dispatch); //xử lý messages (tin nhắn mới, cập nhật conversation)
 
+          // PEOPLE CHAT - RESPONSES
+          if (event === "GET_PEOPLE_CHAT_MES") {
+            handleGetPeopleChatMesResponse(data);
+            return;
+          }
+
+          if (event === "CHECK_USER") {
+            handleCheckUserResponse(data);
+            return;
+          }
+
+          if (event === "GET_USER_LIST") {
+            handleGetUserListResponse(data);
+            return;
+          }
+
+          // PEOPLE CHAT - SEND CHAT 
+          if (event === "SEND_CHAT") {
+            handleSendChatResponse(data); // response cho request
+            handlePeopleChatMessage(data, dispatch); // realtime push
+            return;
+          }
         });
         // Xử lý re-login lần đầu
         await processRelogin();
@@ -104,7 +131,7 @@ function App() {
           height: "100vh",
         }}
       >
-        <ClipLoader size={60} color="#36d7b7" />
+        <ClipLoader size={60} color="#a073a4" />
       </div>
     );
   }

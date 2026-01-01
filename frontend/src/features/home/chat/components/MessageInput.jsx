@@ -1,57 +1,39 @@
-import { useDispatch, useSelector } from "react-redux";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import styles from "./MessageInput.module.scss";
 import { Send } from "lucide-react";
+import { MdAddAPhoto, MdVideoLibrary } from "react-icons/md";
+import { useSendMessage } from "../hooks/useSendMessage.js";
+import { useSendImage } from "../hooks/useSendImage.js";
+import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
-import { addNewMessage } from "../slice/chatSlice";
-import { updateConversationLastMessage } from "../../conversation-list/slice/conversationListSlice.js";
-import { sendPeopleChat } from "../services/peopleChatService.js";
-import { formatMessageTime } from "../../../../utils/dateFormat.js";
+import { useSendVideo } from "../hooks/useSendVideo.js";
 
 export const MessageInput = ({ placeholder = "Nhập tin nhắn..." }) => {
   const [message, setMessage] = useState("");
-  const dispatch = useDispatch();
+  const fileInputRef = useRef(null);
   const { currentChatUser } = useSelector((state) => state.chat);
-  const currentUser = useSelector((state) => state.auth.user);
+  const { sendMessage } = useSendMessage();
+  const { sendImage } = useSendImage();
+  const videoInputRef = useRef(null);
+  const { sendVideo } = useSendVideo();
 
   const handleSend = () => {
-    if (!message.trim()) {
-      return;
-    }
+    if (!message.trim()) return;
     if (!currentChatUser) {
       toast.error("Vui lòng chọn 1 cuộc trò chuyện");
       return;
     }
 
-    const messageText = message.trim();
+    sendMessage(message.trim());
     setMessage("");
+  };
 
-    const time = formatMessageTime(new Date());
+  const handleUploadAndSendImage = () => {
+    fileInputRef.current.click();
+  };
 
-    dispatch(
-      addNewMessage({
-        from: currentUser,
-        to: currentChatUser,
-        mes: messageText,
-        time,
-        isSent: true,
-      })
-    );
-
-    dispatch(
-      updateConversationLastMessage({
-        user: currentChatUser,
-        lastMessage: messageText,
-        time,
-      })
-    );
-
-    // Gửi tin nhắn qua socket
-    sendPeopleChat({ to: currentChatUser, mes: messageText }, (response) => {
-      if (response.status !== "success") {
-        toast.error("Ko thể gửi tin nhắn");
-      }
-    });
+  const handleUploadAndSendVideo = () => {
+    videoInputRef.current.click();
   };
 
   const handleKeyDown = (e) => {
@@ -64,6 +46,18 @@ export const MessageInput = ({ placeholder = "Nhập tin nhắn..." }) => {
   return (
     <footer className={styles.inputArea}>
       <div className={styles.inputWrapper}>
+        <button
+          className={styles.uploadImageButton}
+          onClick={handleUploadAndSendImage}
+        >
+          <MdAddAPhoto size={20} />
+        </button>
+        <button
+          className={styles.uploadImageButton}
+          onClick={handleUploadAndSendVideo}
+        >
+          <MdVideoLibrary size={20} />
+        </button>
         <input
           type="text"
           placeholder={
@@ -82,6 +76,21 @@ export const MessageInput = ({ placeholder = "Nhập tin nhắn..." }) => {
         >
           <Send size={20} />
         </button>
+
+        <input
+          type="file"
+          accept="image/*"
+          ref={fileInputRef}
+          style={{ display: "none" }}
+          onChange={sendImage}
+        />
+        <input
+          type="file"
+          accept="video/*"
+          ref={videoInputRef}
+          style={{ display: "none" }}
+          onChange={sendVideo}
+        />
       </div>
     </footer>
   );
