@@ -87,3 +87,8 @@ $message-received-text: var(--message-received-text);
   // object-fit: cover;
   cursor: pointer;
 }
+.messageSticker {
+  max-width: 140px;
+  max-height: 140px;
+  border-radius: 12px;
+}
