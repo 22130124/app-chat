@@ -1,3 +1,4 @@
+import React from "react";
 import {useDispatch, useSelector} from "react-redux";
 import {toggleTheme} from "../slice/themeSlice.js";
 import {FiMoon, FiSun} from "react-icons/fi";

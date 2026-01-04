@@ -1,3 +1,4 @@
+import React from "react";
 import { AuthForm } from "../components/AuthForm.jsx";
 import styles from "./AuthPage.module.scss";
 import { login } from "../services/authService.js";

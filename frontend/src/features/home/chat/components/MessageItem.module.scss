@@ -1,4 +1,4 @@
-@import "src/theme";
+@use "src/theme" as *;
 
 $bubble-received-bg: var(--bubble-received-bg);
 $message-received-text: var(--message-received-text);

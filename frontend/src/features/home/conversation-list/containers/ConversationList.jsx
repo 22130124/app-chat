@@ -1,3 +1,4 @@
+import React from "react";
 import styles from "./ConversationList.module.scss";
 import { Search } from "lucide-react";
 import { ConversationItem } from "../components/ConversationItem.jsx";

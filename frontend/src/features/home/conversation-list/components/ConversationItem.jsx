@@ -1,3 +1,4 @@
+import React from "react";
 import { formatMessageTime } from "../../../../utils/dateFormat";
 import styles from "./ConversationItem.module.scss";
 

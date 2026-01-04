@@ -1,3 +1,4 @@
+import React from "react";
 import {useEffect, useState} from "react";
 import styles from "./AuthForm.module.scss";
 import {toast} from "react-toastify";

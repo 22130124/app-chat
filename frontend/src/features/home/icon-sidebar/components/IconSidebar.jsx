@@ -1,7 +1,7 @@
+import React from "react";
 import {MessageCircle, Users, Phone, Settings} from "lucide-react";
 import {useState} from "react";
 import styles from "./IconSidebar.module.scss";
-import {FaPowerOff} from "react-icons/fa";
 import ConfirmModal from "../../../../components/ConfirmModal.jsx";
 import {useNavigate} from "react-router-dom";
 import ThemeButton from "../../../theme/components/ThemeButton.jsx";

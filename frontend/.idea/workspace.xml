@@ -8,17 +8,33 @@
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/postcss.config.js" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/App.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/App.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/ConfirmModal.module.scss" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/ConfirmModal.module.scss" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/features/auth/components/AuthForm.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/features/auth/components/AuthForm.jsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/features/auth/components/AuthForm.module.scss" beforeDir="false" afterPath="$PROJECT_DIR$/src/features/auth/components/AuthForm.module.scss" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/features/auth/pages/LoginPage.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/features/auth/pages/LoginPage.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/features/auth/pages/RegisterPage.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/features/auth/pages/RegisterPage.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/features/auth/services/authService.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/features/auth/services/authService.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/features/home/chat/components/MessageInput.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/features/home/chat/components/MessageInput.jsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/features/home/chat/components/MessageInput.module.scss" beforeDir="false" afterPath="$PROJECT_DIR$/src/features/home/chat/components/MessageInput.module.scss" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/features/home/chat/components/MessageItem.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/features/home/chat/components/MessageItem.jsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/features/home/chat/components/MessageItem.module.scss" beforeDir="false" afterPath="$PROJECT_DIR$/src/features/home/chat/components/MessageItem.module.scss" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/features/home/chat/containers/ChatWindow.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/features/home/chat/containers/ChatWindow.jsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/features/home/chat/containers/ChatWindow.module.scss" beforeDir="false" afterPath="$PROJECT_DIR$/src/features/home/chat/containers/ChatWindow.module.scss" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/features/home/conversation-list/components/ConversationItem.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/features/home/conversation-list/components/ConversationItem.jsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/features/home/conversation-list/components/ConversationItem.module.scss" beforeDir="false" afterPath="$PROJECT_DIR$/src/features/home/conversation-list/components/ConversationItem.module.scss" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/features/home/conversation-list/containers/ConversationList.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/features/home/conversation-list/containers/ConversationList.jsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/features/home/conversation-list/containers/ConversationList.module.scss" beforeDir="false" afterPath="$PROJECT_DIR$/src/features/home/conversation-list/containers/ConversationList.module.scss" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/features/home/group/components/CreateGrooup.module.scss" beforeDir="false" afterPath="$PROJECT_DIR$/src/features/home/group/components/CreateGrooup.module.scss" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/features/home/group/components/CreateGroup.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/features/home/group/components/CreateGroup.jsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/features/home/icon-sidebar/components/IconSidebar.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/features/home/icon-sidebar/components/IconSidebar.jsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/features/home/icon-sidebar/components/IconSidebar.module.scss" beforeDir="false" afterPath="$PROJECT_DIR$/src/features/home/icon-sidebar/components/IconSidebar.module.scss" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/index.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/index.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/store/rootReducer.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/store/rootReducer.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/features/home/pages/HomePage.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/features/home/pages/HomePage.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/features/theme/components/ThemeButton.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/features/theme/components/ThemeButton.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/features/theme/components/ThemeButton.module.scss" beforeDir="false" afterPath="$PROJECT_DIR$/src/features/theme/components/ThemeButton.module.scss" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tailwind.config.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vite.config.js" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
