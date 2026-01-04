@@ -1,3 +1,4 @@
+import React from "react";
 import styles from "./ChatWindow.module.scss";
 import { MoreVertical, Phone, Video } from "lucide-react";
 import { MessageItem } from "../components/MessageItem.jsx";

@@ -1,3 +1,4 @@
+import React from "react";
 import styles from "./MessageItem.module.scss";
 
 export const MessageItem = ({ text, time, isSent }) => {
