@@ -25,21 +25,14 @@ export const HomePage = () => {
             });
         }, [])
 
-    // thêm nhóm vừa tạo lên giao diện
-    const addGroup = (groupName) => {
-        const nameStr = String(groupName);
-        const newGroupConv = {
-            id: `group_${groupName}`,
-            type: 1, // nhóm
-            user: nameStr,
-            name: nameStr,
-            lastMessage: "",
-            time: "",
-            avatarContent: null, // icon nhóm
-            isGroup: true,
-        };
+
+     //Nhận conversation group đã được tạo sẵn từ CreateGroup, chỉ dispatch, hông xử lý lại
+    const addGroup = (newGroupConv) => {
+        if (!newGroupConv || !newGroupConv.name) return;
+
         dispatch(addConversation(newGroupConv));
     };
+
 
 
     return (

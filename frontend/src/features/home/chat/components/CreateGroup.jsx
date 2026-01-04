@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState } from "react";
 import { toast } from "react-toastify";
 import styles from "./CreateGrooup.module.scss";
@@ -31,15 +32,14 @@ export const CreateGroup = ({ onClose, addGroup }) => {
             toast.error(`Nhóm "${trimmedName}" đã tồn tại`);
             return;
         }
-
         setLoading(true);
 
 
         try {
-            // Gửi socket tạo nhóm
-            await createGroupChat(trimmedName);
+            //Tạo nhóm trên server
+            await createGroupChat(trimmedName); // gửi socket
 
-            // Thêm conversation mới ngay
+         // đánh dấu ngay trên client
             const newGroupConv = {
                 id: `group_${trimmedName}`,
                 type: 1,
@@ -47,24 +47,22 @@ export const CreateGroup = ({ onClose, addGroup }) => {
                 name: trimmedName,
                 lastMessage: "",
                 time: "",
-                avatarContent: null, // icon nhóm
+                avatarContent: null,
                 isGroup: true,
                 isJoined: true,
             };
             addGroup(newGroupConv);
             saveJoinedGroup(currentUser, trimmedName);
-            dispatch(setCurrentChatUser(trimmedName));
+            dispatch(setCurrentChatUser(`group:${trimmedName}`));
             toast.success(`Nhóm ${trimmedName} đã được tạo!`);
-            console.log("groupName =", trimmedName, typeof trimmedName);
             onClose();
         } catch (e) {
-            console.log("Tạo nhóm thất bại", e);
+            console.error("Tạo nhóm thất bại", e);
             toast.error("Có lỗi xảy ra khi tạo nhóm");
         } finally {
             setLoading(false);
         }
     };
-
     return (
         <div className={styles.overlay}>
             <div className={styles.modal}>

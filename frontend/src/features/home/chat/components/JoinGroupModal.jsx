@@ -1,3 +1,4 @@
+import React from 'react';
 import styles from "./JoinGroupModal.module.scss";
 import { useState } from "react";
 import { joinGroupChat } from "../services/groupService";
