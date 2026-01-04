@@ -1,16 +1,24 @@
+@import "src/theme";
+
+$text: var(--text);
+$primary: var(--primary);
+$primary-light: var(--primary-light);
+
 /* Item chat */
 .item {
   display: flex;
   align-items: center;
   gap: 12px;
   padding: 14px 20px;
-  cursor: pointer;
   transition: all 0.2s ease;
   border-bottom: 1px solid rgba(0, 0, 0, 0.03);
   position: relative;
 
   &:hover {
-    background: linear-gradient(to right, #f8fafc 0%, #ffffff 100%);
+    cursor: pointer;
+    .name {
+      color: $primary;
+    }
   }
 
   &:active {
@@ -22,7 +30,7 @@
   width: 52px;
   height: 52px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, $primary 0%, $primary-light 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -66,7 +74,7 @@
 .name {
   font-weight: 600;
   font-size: 15px;
-  color: #1e293b;
+  color: $text;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

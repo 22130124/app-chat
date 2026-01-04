@@ -1,7 +1,13 @@
+@import "src/theme";
+
+$surface: var(--surface);
+$text: var(--text);
+$message-received-text: var(--message-received-text);
+
 /* Ô nhập tin nhắn */
 .inputArea {
   padding: 16px 24px;
-  background: linear-gradient(to top, #ffffff 0%, #f8fafc 100%);
+  background: $surface;
   border-top: 1px solid rgba(0, 0, 0, 0.06);
   box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.04);
   z-index: 10;
@@ -11,16 +17,15 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  background-color: #ffffff;
+  background-color: $surface;
   border-radius: 24px;
   padding: 4px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  border: 1px solid #6366f1;
   transition: all 0.2s ease;
 
   &:focus-within {
     box-shadow: 0 4px 16px rgba(99, 102, 241, 0.2);
-    border-color: #6366f1;
   }
 }
 

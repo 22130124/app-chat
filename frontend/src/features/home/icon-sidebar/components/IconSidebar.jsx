@@ -4,9 +4,10 @@ import styles from "./IconSidebar.module.scss";
 import {FaPowerOff} from "react-icons/fa";
 import ConfirmModal from "../../../../components/ConfirmModal.jsx";
 import {useNavigate} from "react-router-dom";
+import ThemeButton from "../../../theme/components/ThemeButton.jsx";
+import {FiPower} from "react-icons/fi";
 
 export const IconSidebar = ({onCreateGroup}) => {
-    const [isToggleOn, setIsToggleOn] = useState(true);
     const [isConfirmedOpen, setIsConfirmedOpen] = useState(false);
     const navigate = useNavigate();
 
@@ -27,23 +28,8 @@ export const IconSidebar = ({onCreateGroup}) => {
             </div>
 
             <div className={styles.bottomSection}>
-                <div className={styles.toggleWrapper}>
-                    <button
-                        className={`${styles.toggle} ${isToggleOn ? styles.toggleOn : ""}`}
-                        onClick={() => setIsToggleOn(!isToggleOn)}
-                        aria-label="Toggle"
-                    >
-                        <div className={styles.toggleThumb}></div>
-                    </button>
-                </div>
-
-                <div
-                    onClick={() => setIsConfirmedOpen(true)}
-                    style={{cursor: "pointer"}}
-                    title="Đăng xuất"
-                >
-                    <FaPowerOff className={styles.logoutIcon} size={24} color="#ffffff"/>
-                </div>
+                <ThemeButton/>
+                <FiPower size={20} className={styles.icon} onClick={() => setIsConfirmedOpen(true)}/>
             </div>
 
             <ConfirmModal

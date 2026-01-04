@@ -1,13 +1,20 @@
-@import "../../../variables";
+@import "src/theme";
+@import "src/variables";
+
+$bg: var(--bg);
+$surface: var(--surface);
+$text: var(--text);
+$border: var(--border);
+$shadow: var(--shadow);
 
 .form {
   width: 100%;
   max-width: 360px;
   margin: 0 auto;
   padding: 24px;
-  background: #fff;
+  background: $surface;
   border-radius: 20px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: $shadow;
 }
 
 .formGroup {
@@ -19,7 +26,7 @@
     margin-bottom: 6px;
     font-size: 14px;
     font-weight: 500;
-    color: #333;
+    color: $text;
   }
 
   input {
@@ -27,16 +34,16 @@
     padding: 12px 16px;
     font-size: 15px;
     font-weight: 500;
-    color: #333;
-    background-color: #fff;
-    border: 1px solid $primary-light-color;
+    color: $text;
+    background-color: $surface;
+    border: 1px solid $border;
     border-radius: 12px;
     outline: none;
     transition: all 0.3s ease;
 
     &:focus {
       border-color: $primary-color;
-      box-shadow: 0 0 0 4px rgba($primary-light-color, 0.15);
+      box-shadow: 0 0 0 4px var(--primary-light-color);
       transform: translateY(-1px);
     }
   }

@@ -1,15 +1,22 @@
+@import "src/theme";
+
+$bg: var(--bg);
+$surface: var(--surface);
+$text: var(--text);
+
 .container {
   display: flex;
   flex-direction: column;
   height: 100%;
   position: relative;
   z-index: 1;
+  background-color: $bg;
 }
 
 /* Header chat */
 .header {
   height: 70px;
-  background: linear-gradient(to bottom, #ffffff 0%, #f8fafc 100%);
+  background: $surface;
   border-bottom: 1px solid rgba(0, 0, 0, 0.06);
   display: flex;
   align-items: center;
@@ -66,7 +73,7 @@
 .headerName {
   font-weight: 600;
   font-size: 16px;
-  color: #1e293b;
+  color: $text;
   margin-bottom: 2px;
 }
 
@@ -88,7 +95,7 @@
   border-radius: 50%;
   border: none;
   background-color: transparent;
-  color: #64748b;
+  color: $text;
   cursor: pointer;
   display: flex;
   align-items: center;

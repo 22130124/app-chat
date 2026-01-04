@@ -1,3 +1,8 @@
+@import "src/theme";
+
+$bubble-received-bg: var(--bubble-received-bg);
+$message-received-text: var(--message-received-text);
+
 .messageGroup {
   display: flex;
   flex-direction: column;
@@ -27,8 +32,8 @@
   align-self: flex-start;
 
   .messageBubble {
-    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-    color: #1e293b;
+    background: $bubble-received-bg;
+    color: $message-received-text;
     border-bottom-left-radius: 4px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   }
