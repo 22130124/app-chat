@@ -11,18 +11,10 @@ import Picker from '@emoji-mart/react';
 import data from '@emoji-mart/data';
 import { useChatPicker } from "../hooks/useChatPicker.js";
 import { useSendEmoji } from "../hooks/useSendEmoji.js";
+import{useSendSticker} from "../hooks/useSendSticker.js";
 
+const   GIPHY_API_KEY = import.meta.env.VITE_GIPHY_API_KEY;
 
-const LOCAL_STICKERS = [
-  "/stickers/sticker1.png",
-  "/stickers/sticker2.png",
-  "/stickers/sticker3.png",
-  "/stickers/sticker4.png",
-  "/stickers/sticker5.png",
-  "/stickers/sticker6.png",
-  "/stickers/sticker7.png",
-  "/stickers/sticker8.png",
-];
 
 
 
@@ -41,6 +33,8 @@ export const MessageInput = ({ placeholder = "Nhập tin nhắn..." }) => {
   const buttonRef = useRef(null);
   const [popupPosition, setPopupPosition] = useState({ top: 0, left: 0 });
   const { handleSelectEmoji } = useSendEmoji();
+  const{stickers, fetchStickers} = useSendSticker(GIPHY_API_KEY);
+
 
 
   const handleSend = () => {
@@ -62,8 +56,10 @@ export const MessageInput = ({ placeholder = "Nhập tin nhắn..." }) => {
     videoInputRef.current.click();
   };
 
-  const handleSelectSticker = (sticker) =>
-      setMessage(prev => prev + `[sticker:${sticker}]`);
+  const handleSelectSticker = (stickerUrl) => {
+    // Gửi sticker dưới dạng text với prefix [sticker]
+    sendMessage(`[sticker]${stickerUrl}`);
+  };
 
   const handleKeyDown = (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -71,6 +67,18 @@ export const MessageInput = ({ placeholder = "Nhập tin nhắn..." }) => {
       handleSend();
     }
   };
+
+  useEffect(()=> {
+    if (tab === "sticker") fetchStickers([
+      "funny",
+      "cute",
+      "love",
+      "sad",
+      "lovely",
+      "hello"
+    ]);//load sticker khi mở tab
+  }, [tab]);
+
 
   // Tính vị trí popup khi mở
   useEffect(() => {
@@ -161,12 +169,12 @@ export const MessageInput = ({ placeholder = "Nhập tin nhắn..." }) => {
                   )}
                   {tab === "sticker" && (
                       <div className={styles.stickerGrid}>
-                        {LOCAL_STICKERS.map((sticker, i) => (
+                        {stickers.map((sticker) => (
                             <img
-                                key={i}
-                                src={sticker}
+                                key={sticker.uid}
+                                src={sticker.url}
                                 alt="sticker"
-                                onClick={() => handleSelectSticker(sticker)}
+                                onClick={() => handleSelectSticker(sticker.url)}
                             />
                         ))}
                       </div>
