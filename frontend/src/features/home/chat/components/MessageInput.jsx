@@ -17,7 +17,6 @@ const   GIPHY_API_KEY = import.meta.env.VITE_GIPHY_API_KEY;
 
 
 
-
 export const MessageInput = ({ placeholder = "Nhập tin nhắn..." }) => {
   const [message, setMessage] = useState("");
   const fileInputRef = useRef(null);
