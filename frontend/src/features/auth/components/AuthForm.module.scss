@@ -84,3 +84,10 @@ $shadow: var(--shadow);
     transform: translateY(-2px);
   }
 }
+
+.loadingBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}

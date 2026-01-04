@@ -65,10 +65,11 @@ function App() {
                 });
                 // Xử lý re-login lần đầu
                 await processReloginWhenAccess(dispatch);
-                setCheckingRelogin(false);
             } catch (error) {
                 console.error("Lỗi kết nối WebSocket:", error);
                 navigate("/login");
+            } finally {
+                setCheckingRelogin(false);
             }
         };
         initApp();
@@ -91,6 +92,7 @@ function App() {
                 }}
             >
                 <ClipLoader size={60} color="#a073a4"/>
+                <p>Đang xác thực phiên đăng nhập…</p>
             </div>
         );
     }

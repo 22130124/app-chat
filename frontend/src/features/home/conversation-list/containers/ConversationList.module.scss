@@ -12,9 +12,17 @@ $border: var(--border);
 }
 
 .header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   padding: 20px 20px 16px;
   border-bottom: 1px solid rgba(0, 0, 0, 0.06);
   background: $surface;
+}
+
+.currentUser {
+  color: $text;
+  font-weight: bold;
 }
 
 .title {

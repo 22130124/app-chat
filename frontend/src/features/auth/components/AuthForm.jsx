@@ -6,8 +6,9 @@ import {useNavigate} from "react-router-dom";
 import {useDispatch, useSelector} from "react-redux";
 import {logout} from "../services/authService.js";
 import {processLogout} from "../slice/authSlice.js";
+import {ClipLoader} from "react-spinners";
 
-export const AuthForm = ({ type = "login", onSubmit }) => {
+export const AuthForm = ({ type = "login", onSubmit, loading }) => {
     const navigate = useNavigate();
 
     const dispatch = useDispatch();
@@ -102,9 +103,17 @@ export const AuthForm = ({ type = "login", onSubmit }) => {
                 </div>
             )}
 
-            <button className={styles.submitBtn} type="submit">
-                {type === "register" ? "Đăng ký" : "Đăng nhập"}
+            <button className={styles.submitBtn} type="submit" disabled={loading}>
+                {loading ? (
+                    <div className={styles.loadingBtn}>
+                        <ClipLoader size={18} color="#fff" />
+                        <span>{type === "register" ? "Đang đăng ký..." : "Đang đăng nhập..."}</span>
+                    </div>
+                ) : (
+                    type === "register" ? "Đăng ký" : "Đăng nhập"
+                )}
             </button>
+
 
             <button className={styles.switchPageBtn} onClick={handleSwitchPage}>
                 {type === "register" ? "Quay về đăng nhập" : "Đăng ký tài khoản mới"}
