@@ -1,3 +1,4 @@
+import React from "react";
 import { useRef, useState } from "react";
 import styles from "./MessageInput.module.scss";
 import { Send } from "lucide-react";

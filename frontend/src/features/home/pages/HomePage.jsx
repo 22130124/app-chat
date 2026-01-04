@@ -1,3 +1,4 @@
+import React from "react";
 import styles from "./HomePage.module.scss";
 import { IconSidebar } from "../icon-sidebar/components/IconSidebar.jsx";
 import { ConversationList } from "../conversation-list/containers/ConversationList.jsx";
