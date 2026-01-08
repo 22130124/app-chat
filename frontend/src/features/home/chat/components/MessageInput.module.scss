@@ -1,4 +1,4 @@
-@use "src/theme" as *;
+@use "../../../../theme" as *;
 
 $surface: var(--surface);
 $text: var(--text);
@@ -37,11 +37,24 @@ $message-received-text: var(--message-received-text);
   padding: 12px 0;
   font-size: 15px;
   color: #1e293b;
+  font-family: inherit; 
+  font-size: inherit;
   background: transparent;
+  width: 100%;
 
   &::placeholder {
     color: #94a3b8;
   }
+}
+
+.textarea {
+  min-height: 36px;
+  max-height: 120px;
+  resize: none;
+  overflow-y: hidden;
+  white-space: pre-wrap; /* giữ xuống dòng */
+  word-break: break-word; /* xuống dòng khi từ quá dài */
+  overflow-wrap: anywhere;
 }
 
 .sendButton, .uploadImageButton {
