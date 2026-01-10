@@ -5,51 +5,58 @@ const groupSlice = createSlice({
     initialState: {
         groups: [],
         loading: false,
-        error:null,
-
+        error: null,
     },
 
-    reducers:{
-        // load group từ server
-        setGroups(state, action){
+    reducers: {
+        // Load danh sách group từ server
+        setGroups(state, action) {
             state.groups = action.payload;
-
         },
-        //thêm group
-        addGroup(state, action){
+
+        // Thêm group mới (khi CREATE_ROOM)
+        addGroup(state, action) {
             const exist = state.groups.find(
-                (g)=>g.name===action.payload.name
+                (g) => g.name === action.payload.name
             );
-            if(!exist){
-                state.groups.unshift(action.payload);
+            if (!exist) {
+                state.groups.unshift({
+                    ...action.payload,
+                    joined: action.payload.joined ?? false,
+                    lastMessage: action.payload.lastMessage ?? "",
+                    time: action.payload.time ?? "",
+                });
             }
         },
-        // đánh dấu đã join
-        markGroupJoined(state, action){
+
+        // Đánh dấu user đã join group
+        markGroupJoined(state, action) {
             const group = state.groups.find(
-                (g)=>g.name ===action.payload
+                (g) => g.name === action.payload
             );
-            if(group){
+            if (group) {
                 group.joined = true;
             }
         },
-        // update last message
-        updateGroupLastMes(state, action){
-            const {name, lastMes, time}= action.payload;
-            const group = state.groups.find(
-                (g)=>g.name===action.payload.name
-            );
-            if(group){
-                group.lastMes = lastMes;
-                group.time=time;
+
+        // Update last message của group (realtime)
+        updateGroupLastMessage(state, action) {
+            const { name, lastMessage, time } = action.payload;
+            const group = state.groups.find((g) => g.name === name);
+            if (group) {
+                group.lastMessage = lastMessage;
+                group.time = time;
             }
         },
-        setGroupLoading(state, action){
+
+        setGroupLoading(state, action) {
             state.loading = action.payload;
         },
-        setGroupError(state, action){
+
+        setGroupError(state, action) {
             state.error = action.payload;
         },
+
         clearGroups(state) {
             state.groups = [];
             state.loading = false;

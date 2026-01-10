@@ -1,0 +1,101 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(5px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.modal {
+  width: 420px;
+  max-height: 70vh;
+  background: #1e1f24;
+  border-radius: 16px;
+  padding: 20px;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  animation: pop .25s ease;
+}
+
+@keyframes pop {
+  from { transform: scale(.9); opacity: 0 }
+  to { transform: scale(1); opacity: 1 }
+}
+
+h3 {
+  margin-bottom: 16px;
+  font-size: 18px;
+  span {
+    color: #8b5cf6;
+  }
+}
+
+.list {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.inviteRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #2a2b31;
+  padding: 10px 12px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+}
+
+.user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg,#6366f1,#8b5cf6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+.inviteBtn {
+  background: #8b5cf6;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 8px;
+  color: white;
+  cursor: pointer;
+  font-weight: 500;
+
+  &:hover {
+    background: #7c3aed;
+  }
+}
+
+.closeBtn {
+  margin-top: 12px;
+  padding: 10px;
+  border-radius: 10px;
+  background: #2a2b31;
+  color: white;
+  border: none;
+  cursor: pointer;
+
+  &:hover {
+    background: #505051;
+  }
+}
+
+.empty {
+  text-align: center;
+  color: #aaa;
+  margin-top: 30px;
+}

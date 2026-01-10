@@ -29,3 +29,19 @@ export const saveJoinedGroup = (currentUser, groupName) => {
         );
     }
 };
+
+const INVITE_GROUPS_KEY = "INVITED_GROUPS";
+
+export const getInvitedGroups = (username) => {
+    const data = JSON.parse(localStorage.getItem(INVITE_GROUPS_KEY) || "{}");
+    return data[username] || [];
+};
+
+export const saveInvitedGroup = (username, groupName) => {
+    const data = JSON.parse(localStorage.getItem(INVITE_GROUPS_KEY) || "{}");
+    if (!data[username]) data[username] = [];
+    if (!data[username].includes(groupName)) {
+        data[username].push(groupName);
+        localStorage.setItem(INVITE_GROUPS_KEY, JSON.stringify(data));
+    }
+};
