@@ -11,14 +11,25 @@ import { ClipLoader } from "react-spinners";
 import { updateConversationLastMessage } from "../../conversation-list/slice/conversationListSlice.js";
 import { formatMessage } from "../../../../utils/messageFormat.js";
 import { formatMessageTime } from "../../../../utils/dateFormat.js";
+import { InviteUserModal } from "../components/InviteUserModal";
+import { useState } from "react";
+
 
 export const ChatWindow = () => {
   const dispatch = useDispatch();
   const { currentChatUser, messages, loading, error } = useSelector(
     (state) => state.chat
+
   );
   const currentUser = useSelector((state) => state.auth.user);
   const messagesRef = useRef(null);
+  // State để mở / đóng Invite modal
+  const [showInvite, setShowInvite] = useState(false);
+  const conversations = useSelector(state => state.conversationList.conversations);
+  const isGroupChat = conversations.some(
+      c => c.type === 1 && c.conversationKey === currentChatUser
+  );
+
 
   //load mes khi chọn conversation
   useEffect(() => {
@@ -128,11 +139,33 @@ export const ChatWindow = () => {
           <button className={styles.actionButton}>
             <Video size={20} />
           </button>
-          <button className={styles.actionButton}>
+
+
+          {/*
+            Nút 3 chấm:
+            - nếu là group -> mở InviteUserModal
+            - nếu là chat 1-1 -> không làm gì
+          */}
+          <button
+              className={styles.actionButton}
+              onClick={() => {
+                if (isGroupChat) {
+                  setShowInvite(true);
+                }
+              }}
+          >
             <MoreVertical size={20} />
           </button>
         </div>
       </header>
+
+      {/*Invite Modal (chỉ hiện khi là group) */}
+      {showInvite && isGroupChat && (
+          <InviteUserModal
+              roomName={currentChatUser}
+              onClose={() => setShowInvite(false)}
+          />
+      )}
 
       <section className={styles.messages} ref={messagesRef}>
         {loading ? (
