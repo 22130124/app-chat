@@ -1,5 +1,5 @@
-@use "src/theme" as *;
-@use "src/variables" as *;
+@use "../../../theme" as *;
+@use "../../../variables" as *;
 
 $bg: var(--bg);
 $surface: var(--surface);
