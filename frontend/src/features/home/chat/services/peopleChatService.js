@@ -4,6 +4,8 @@ import { addNewMessage } from "../slice/chatSlice.js";
 
 // Callbacks để xử lý responses từ server
 let peopleChatCallback = {};
+export const GROUP_INVITE_EVENT = "GROUP_INVITE_EVENT";
+
 
 //hàm lấy ds tin nhắn 1-1
 export const getPeopleChatMes = ({ name, page = 1 }, callback) => {
@@ -179,8 +181,27 @@ export const handlePeopleChatMessage = (message, dispatch) => {
     return;
   }
 
-  //0:people, 1:room
   if (data.type === 0) {
+    //INVITE LOGIC
+    try {
+      const payload = JSON.parse(data.mes);
+
+      if (payload.__type === "INVITE") {
+        // phát sự kiện global cho UI
+        window.dispatchEvent(
+            new CustomEvent(GROUP_INVITE_EVENT, {
+              detail: {
+                roomName: payload.roomName,
+                from: payload.from,
+              },
+            })
+        );
+        return; // không đưa invite vào chat
+      }
+    } catch (e) {
+      // không phải JSON → tin nhắn thường
+    }
+    //0:people, 1:room
     const isSent = data.name === currentUser;
     const otherUser = isSent ? data.to : data.from;
 
@@ -207,5 +228,44 @@ export const handlePeopleChatMessage = (message, dispatch) => {
 
   if (data.type === 1) {
     // Ngân làm vào đây nha
+    const currentUser = localStorage.getItem("user");
+    const isSent = data.name === currentUser; // người gửi
+
+    const groupName = data.to; // tên nhóm
+
+    //push message vào khung chat
+    dispatch(
+        addNewMessage({
+          from: data.name,
+          to: groupName,
+          mes: data.mes,
+          time: data.time || new Date().toISOString(),
+          isSent,
+          isGroup: true,
+        })
+    );
+
+    //update last message cho conversation list
+    dispatch(
+        updateConversationLastMessage({
+          user: groupName,     //group dùng name
+          lastMessage: data.mes,
+          time: data.time || new Date().toISOString(),
+          isGroup: true,
+        })
+    );
   }
 };
+
+// api mời user khác tham gia nhóm
+export const sendGroupInvite = ({ toUser, roomName, fromUser }) => {
+  return sendPeopleChat({
+    to: toUser,
+    mes: JSON.stringify({
+      __type: "INVITE",
+      roomName,
+      from: fromUser,
+    }),
+  });
+};
+

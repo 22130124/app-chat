@@ -11,13 +11,13 @@ import {
     setSearchQuery,
 } from "../slice/conversationListSlice.js";
 import { setCurrentChatUser } from "../../chat/slice/chatSlice.js";
-import { checkUser, getPeopleChatMes} from "../../chat/services/peopleChatService.js";
+import { checkUser, getPeopleChatMes, GROUP_INVITE_EVENT} from "../../chat/services/peopleChatService.js";
 import { ClipLoader } from "react-spinners";
 import { isSocketReady } from "../../../../socket/socket.js";
 import { fetchInitialConversations } from "../services/conversationListService.js";
 
 import { JoinGroupModal } from "../../chat/components/JoinGroupModal.jsx";
-import { getJoinedGroups, saveJoinedGroup } from "../../../../utils/joinGroupStorage";
+import { getJoinedGroups, saveJoinedGroup, getInvitedGroups, saveInvitedGroup } from "../../../../utils/joinGroupStorage";
 
 
 export const ConversationList = ({ groups = [] }) => {
@@ -40,11 +40,46 @@ export const ConversationList = ({ groups = [] }) => {
         if (!currentUser || conversations.length > 0 || !isSocketReady()) return;
         dispatch(setConversationLoading(true));
         fetchInitialConversations(currentUser, (data) => {
-            // không xử lý lại group / isJoined ở đây nữa
             dispatch(setConversationLoading(false));
-            dispatch(setConversations(data));
+
+            // Lấy danh sách nhóm đã join
+            const joinedGroups = getJoinedGroups(currentUser);
+
+            // Lấy danh sách nhóm được mời nhưng chưa join
+            const invitedGroups = getInvitedGroups(currentUser).filter(
+                name => !joinedGroups.includes(name)
+            );
+
+            const invitedConversations = invitedGroups.map(name => ({
+                name,
+                type: 1,
+                isJoined: false,
+                lastMessage: "",
+                time: "",
+                conversationKey: `group:${name}`,
+            }));
+
+            // tạo các conversation object cho nhóm đã join
+            const joinedConversations = joinedGroups.map(name => ({
+                name,
+                type: 1,
+                isJoined: true,
+                lastMessage: "",
+                time: "",
+                conversationKey: `group:${name}`,
+            }));
+
+            // Merge data từ server + joined + invited, loại bỏ trùng
+            const allConversations = [
+                ...data,
+                ...joinedConversations.filter(j => !data.some(d => d.name === j.name)),
+                ...invitedConversations.filter(i => !data.some(d => d.name === i.name))
+            ];
+
+            dispatch(setConversations(allConversations));
         });
     }, [currentUser]);
+
 
 
     // cập nhật trạng thái join hoạc chưa join nhóm. Do lấy từ localStorage nên nếu chạy app khác port
@@ -71,6 +106,43 @@ export const ConversationList = ({ groups = [] }) => {
         }
     }, [currentUser, conversations]);
 
+    // xử lý mời tham gia nhóm
+    useEffect(() => {
+        const handler = (e) => {
+            const { roomName, from } = e.detail;
+
+            console.log("INVITED TO GROUP", roomName, "by", from);
+
+            // Thêm nhóm vào conversations nếu chưa tồn tại
+            const exists = conversations.find(conv => conv.name === roomName);
+            if (!exists) {
+                dispatch(addConversation({
+                    name: roomName,
+                    type: 1, // nhóm
+                    isJoined: false, // chưa join
+                    lastMessage: "",
+                    time: "",
+                    conversationKey: `group:${roomName}`
+                }));
+                saveInvitedGroup(currentUser, roomName);
+            }
+
+            // hiện modal mời join
+            setJoinGroupModal({
+                visible: true,
+                groupName: roomName,
+            });
+        };
+
+        window.addEventListener(GROUP_INVITE_EVENT, handler);
+
+        return () => {
+            window.removeEventListener(GROUP_INVITE_EVENT, handler);
+        };
+    }, [conversations]); // thêm conversations vào dependency
+
+
+
     // Filter conversations
     const filteredConversations = conversations.filter((conv) =>
         conv.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -88,7 +160,7 @@ export const ConversationList = ({ groups = [] }) => {
             dispatch(setCurrentChatUser(conv.user)); // dùng conv.user trực tiếp
         } else if (conv.type === 1) {
             if (conv.isJoined) {
-                dispatch(setCurrentChatUser(conv.user)); // cũng dùng conv.user cho ChatWindow
+                dispatch(setCurrentChatUser(`group:${conv.name}`));
             } else {
                 setJoinGroupModal({ visible: true, groupName: conv.name });
             }
